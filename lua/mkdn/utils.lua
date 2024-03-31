@@ -3,19 +3,19 @@ local function readFirstNLines(filePath, N)
   local lines = {}
   local file = io.open(filePath, 'r')
   if file then
-    for _ = 1, N do
+    for i = 1, N do
       local line = file:read('*line')
       if not line then
         break
       end
       table.insert(lines, line)
-      if line == '---' then
+      if line == '---' and i > 1 then
         break
       end
     end
     file:close()
   end
-  return table.concat(lines, '\n')
+  return lines
 end
 
 
@@ -76,22 +76,16 @@ local function parseFrontmatter(fileContent)
   return frontmatter
 end
 
+local filecontent1 = [[
+---
+title: My title
+tags: [tag1, tag2]
+---
 
-return {
-  readFirstNLines = readFirstNLines,
-  parseFrontmatter = parseFrontmatter,
-}
-
--- local filecontent1 = [[
--- ---
--- title: My title
--- tags: [tag1, tag2]
--- ---
---
--- This is the content
--- - item 1
--- - item 2
--- ]]
+This is the content
+- item 1
+- item 2
+]]
 
 -- local filecontent1 = {
 --   '---',
@@ -117,5 +111,11 @@ return {
 --   '---',
 -- }
 
--- parseFrontmatter(filecontent1)
+-- print(vim.inspect(parseFrontmatter(filecontent1)))
 -- parseFrontmatter(filecontent2)
+
+return {
+  readFirstNLines = readFirstNLines,
+  parseFrontmatter = parseFrontmatter,
+}
+

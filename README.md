@@ -16,13 +16,13 @@ mkdn.nvim is markdown toolkit for neovim.
 List files with frontmatter key and value
 
 ```lua
-require('mkdn').md_files({tags = {'tag1', 'tag2'}, type = 'note'})
+require('mkdn').md_files({filter = {tags = {'tag1', 'tag2'}, type = 'note'}})
 ```
 
 Live grep files with frontmatter key and value
 
 ```lua
-require('mkdn').md_grep({tags = {'tag1', 'tag2'}, type = 'daily'})
+require('mkdn').md_grep({filter={tags = {'tag1', 'tag2'}, type = 'daily'}})
 ```
 
 ### Fold

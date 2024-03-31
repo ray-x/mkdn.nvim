@@ -1,17 +1,17 @@
 local readFirstNLines = require('mkdn.utils').readFirstNLines
 local parseFrontmatter = require('mkdn.utils').parseFrontmatter
-local function contains_all(table, table2)
+local function contains_all(table1, table2)
   for key, value in pairs(table2) do
-    if not vim.tbl_contains(table, value) then
+    if not vim.tbl_contains(table1, value) then
       return false
     end
   end
   return true
 end
 
-local function contains_any(table, table2)
+local function contains_any(table1, table2)
   for key, value in pairs(table2) do
-    if vim.tbl_contains(table, value) then
+    if vim.tbl_contains(table1, value) then
       return true
     end
   end
@@ -37,11 +37,15 @@ local function searchMarkdownFiles(dir, N, criteria, matches)
       searchMarkdownFiles(filePath, N, criteria, matches) -- Recursive call
     elseif ftype == 'file' and name:match('%.md$') then
       local fileContent = readFirstNLines(filePath, N)
+      if not fileContent then
+        print('Error reading file: ' .. filePath)
+        break
+      end
       local frontmatter = parseFrontmatter(fileContent)
       local match = true
       for key, value in pairs(criteria) do
         local target = frontmatter[key]
-        value = type(target) == 'table' and value or { value }
+        value = type(value) == 'table' and value or { value }
         target = type(target) == 'table' and target or { target }
         if match_all == 'all' then
           match = contains_all(target, value)
@@ -59,7 +63,7 @@ local function searchMarkdownFiles(dir, N, criteria, matches)
   return matches
 end
 
-local function md_search(criteria, N)
+local function md_list(criteria, N)
   N = N or 20
   local currentDir = vim.fn.getcwd() -- Get the current working directory
   return searchMarkdownFiles(currentDir, N, criteria)
@@ -87,11 +91,11 @@ local md_files = function(opts)
 
   local conf = require('telescope.config').values
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
-  local files = md_search({ tags = 'streamco' }, 40)
+  local files = md_list(opts.filter, 40)
   opts.search = nil
   pickers
     .new(opts, {
-      prompt_title = 'Marddown File',
+      prompt_title = 'Markdown File',
       finder = finders.new_table({ results = files }),
       previewer = previewers.cat.new(opts),
       sorter = conf.file_sorter(opts),
@@ -116,12 +120,16 @@ local md_grep_telescope = function(opts)
   local finders = require('telescope.finders')
   local make_entry = require('telescope.make_entry')
   local previewers = require('telescope.previewers')
+  local setup_opts = require('mkdn.config').setup().telescope
   opts = vim.tbl_extend('force', setup_opts, opts or {})
 
   opts.vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
 
+  if opts.filter then
+    opts.search_files = md_list(opts.filter, 40)
+  end
   if opts.search_dirs then
     for i, path in ipairs(opts.search_dirs) do
       opts.search_dirs[i] = vim.fn.expand(path)
@@ -135,20 +143,22 @@ local md_grep_telescope = function(opts)
 
   local cmd_generator = function(prompt)
     local args = tbl_clone(opts.vimgrep_arguments)
-    local prompt_parts = vim.split(prompt, ' ')
-    local cmd = vim.tbl_flatten({ args, prompt_parts, where })
 
+    local prompt_parts
     if not prompt or prompt == '' then
+      prompt = [[^#\s]]
       -- output the first line of files in the list
-      local w = {}
-      for i, v in ipairs(where) do
-        table.insert(w, v .. ':1:1:')
-      end
-      w = table.concat(w, '\n')
-
-      w = w .. '\n'
-      return vim.tbl_flatten({ 'printf', w })
+      -- local w = {}
+      -- for i, v in ipairs(where or {}) do
+      --   table.insert(w, v .. ':1:1:')
+      -- end
+      -- w = table.concat(w, '\n')
+      --
+      -- w = w .. '\n'
+      -- return vim.tbl_flatten({ 'printf', w })
     end
+    prompt_parts = vim.split(prompt, ' ')
+    local cmd = vim.tbl_flatten({ args, prompt_parts, where })
     return cmd
   end
 
@@ -180,19 +190,20 @@ local md_grep_telescope = function(opts)
       finder = finder(),
       previewer = conf.grep_previewer(opts),
       sorter = sorters.highlighter_only(opts),
-      attach_mappings = function(_, map)
-        for mode, mappings in pairs(opts.mappings) do
-          for key, action in pairs(mappings) do
-            map(mode, key, action)
-          end
-        end
-        return true
-      end,
+      -- attach_mappings = function(_, map)
+      --   for mode, mappings in pairs(opts.mappings) do
+      --     for key, action in pairs(mappings) do
+      --       map(mode, key, action)
+      --     end
+      --   end
+      --   return true
+      -- end,
     })
     :find()
 end
 
 return {
   md_files = md_files,
+  md_list = md_list,
   md_grep_telescope = md_grep_telescope,
 }
