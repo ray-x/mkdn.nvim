@@ -205,5 +205,5 @@ end
 return {
   md_files = md_files,
   md_list = md_list,
-  md_grep_telescope = md_grep_telescope,
+  md_grep = md_grep_telescope,
 }
