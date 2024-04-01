@@ -111,6 +111,89 @@ local tbl_clone = function(original)
   return copy
 end
 
+-- grep 2  (?:#|\\[\\[|(?:^|\\s)-\\s*|tags:\\s*[^,]*,\\s*)keyword(?:\\]\\]|(?=,|\\s|$))
+
+local md_grep_tag_telescope = function(opts)
+  local pickers = require('telescope.pickers')
+  local sorters = require('telescope.sorters')
+  local telescope = require('telescope')
+  local themes = require('telescope.themes')
+  local conf = require('telescope.config').values
+  local finders = require('telescope.finders')
+  local make_entry = require('telescope.make_entry')
+  local previewers = require('telescope.previewers')
+  local setup_opts = require('mkdn.config').setup().telescope
+  opts = vim.tbl_extend('force', setup_opts, opts or {})
+
+  opts.vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
+
+  if opts.filter then
+    opts.search_files = md_list(opts.filter, 40)
+  end
+  if opts.search_dirs then
+    for i, path in ipairs(opts.search_dirs) do
+      opts.search_dirs[i] = vim.fn.expand(path)
+    end
+  end
+  local where = opts.search_dirs or ''
+
+  local cmd_generator = function(prompt)
+    local args = tbl_clone(opts.vimgrep_arguments)
+
+    if not prompt or prompt == '' then
+      return
+    end
+    prompt = string.format(
+      '(?:#|\\[\\[|(?:^|\\s)-\\s*|tags:\\s*[^,]*,\\s*)%s(?:\\]\\]|(?=,|\\s|$))',
+      prompt
+    )
+    local types = '-t md'
+    local cmd = vim.tbl_flatten({ args, prompt, where, types })
+    return cmd
+  end
+
+  -- apply theme
+  if type(opts.theme) == 'table' then
+    opts = vim.tbl_extend('force', opts, opts.theme)
+  elseif type(opts.theme) == 'string' then
+    if themes['get_' .. opts.theme] == nil then
+      vim.notify_once(
+        'live grep args config theme »' .. opts.theme .. '« not found',
+        vim.log.levels.WARN
+      )
+    else
+      opts = themes['get_' .. opts.theme](opts)
+    end
+  end
+
+  local finder = function()
+    local prompt_bufnr = vim.api.nvim_get_current_buf()
+    local action_state = require('telescope.actions.state')
+    local action_utils = require('telescope.actions.utils')
+    local current_picker = action_state.get_current_picker(prompt_bufnr)
+    return finders.new_job(cmd_generator, opts.entry_maker, opts.max_results, opts.cwd)
+  end
+
+  pickers
+    .new(opts, {
+      prompt_title = 'Live Grep Markdown Files',
+      finder = finder(),
+      previewer = conf.grep_previewer(opts),
+      sorter = sorters.highlighter_only(opts),
+      -- attach_mappings = function(_, map)
+      --   for mode, mappings in pairs(opts.mappings) do
+      --     for key, action in pairs(mappings) do
+      --       map(mode, key, action)
+      --     end
+      --   end
+      --   return true
+      -- end,
+    })
+    :find()
+end
+
 local md_grep_telescope = function(opts)
   local pickers = require('telescope.pickers')
   local sorters = require('telescope.sorters')
