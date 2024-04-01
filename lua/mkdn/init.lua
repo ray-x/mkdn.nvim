@@ -4,13 +4,13 @@ local function setup(cfg)
   if cfg.follow_link then
     vim.keymap.set({ 'n', 'x' }, 'gx', require('mkdn.lnk').follow_link)
   end
-  -- if cfg.paste_link then
-  --   vim.keymap.set({ 'n', 'x' }, 'gp', require('mkdn.lnk').paste_link)
-  -- end
+
+  require('mkdn.commands')
 end
 
 return {
   setup = setup,
   list_files = require('mkdn.finder').md_files,
-  grep_files = require('mkdn.finder').md_grep_telescope,
+  grep_files = require('mkdn.finder').md_grep,
+  grep_tag = require('mkdn.finder').md_tag,
 }

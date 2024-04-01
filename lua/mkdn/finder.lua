@@ -73,10 +73,10 @@ end
 
 local md_files = function(opts)
   local pickers = require('telescope.pickers')
-  local sorters = require('telescope.sorters')
-  local telescope = require('telescope')
-  local themes = require('telescope.themes')
-  local conf = require('telescope.config').values
+  -- local sorters = require('telescope.sorters')
+  -- local telescope = require('telescope')
+  -- local themes = require('telescope.themes')
+  -- local conf = require('telescope.config').values
   local finders = require('telescope.finders')
   local make_entry = require('telescope.make_entry')
   local previewers = require('telescope.previewers')
@@ -113,10 +113,10 @@ end
 
 -- grep 2  (?:#|\\[\\[|(?:^|\\s)-\\s*|tags:\\s*[^,]*,\\s*)keyword(?:\\]\\]|(?=,|\\s|$))
 
-local md_grep_tag_telescope = function(opts)
+local grep_tag = function(opts)
   local pickers = require('telescope.pickers')
   local sorters = require('telescope.sorters')
-  local telescope = require('telescope')
+  -- local telescope = require('telescope')
   local themes = require('telescope.themes')
   local conf = require('telescope.config').values
   local finders = require('telescope.finders')
@@ -129,27 +129,26 @@ local md_grep_tag_telescope = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
 
-  if opts.filter then
-    opts.search_files = md_list(opts.filter, 40)
-  end
+  -- if opts.filter then
+  --   opts.search_files = md_list(opts.filter, 40)
+  -- end
   if opts.search_dirs then
     for i, path in ipairs(opts.search_dirs) do
       opts.search_dirs[i] = vim.fn.expand(path)
     end
   end
-  local where = opts.search_dirs or ''
+  local where = opts.search_dirs or {}
 
   local cmd_generator = function(prompt)
     local args = tbl_clone(opts.vimgrep_arguments)
 
     if not prompt or prompt == '' then
-      return
+      prompt = vim.fn.expand('<cword>')
     end
-    prompt = string.format(
-      '(?:#|\\[\\[|(?:^|\\s)-\\s*|tags:\\s*[^,]*,\\s*)%s(?:\\]\\]|(?=,|\\s|$))',
-      prompt
-    )
-    local types = '-t md'
+    prompt =
+      string.format([[(?:#|\[\[|(?:^|\s)-\s*|tags:\s*[^,]*,\s*)%s(?:\]\]|(?=,|\s|$))]], prompt)
+    table.insert(args, '--pcre2')
+    local types = { '-t', 'md' }
     local cmd = vim.tbl_flatten({ args, prompt, where, types })
     return cmd
   end
@@ -169,10 +168,6 @@ local md_grep_tag_telescope = function(opts)
   end
 
   local finder = function()
-    local prompt_bufnr = vim.api.nvim_get_current_buf()
-    local action_state = require('telescope.actions.state')
-    local action_utils = require('telescope.actions.utils')
-    local current_picker = action_state.get_current_picker(prompt_bufnr)
     return finders.new_job(cmd_generator, opts.entry_maker, opts.max_results, opts.cwd)
   end
 
@@ -194,15 +189,13 @@ local md_grep_tag_telescope = function(opts)
     :find()
 end
 
-local md_grep_telescope = function(opts)
+local md_grep = function(opts)
   local pickers = require('telescope.pickers')
   local sorters = require('telescope.sorters')
-  local telescope = require('telescope')
   local themes = require('telescope.themes')
   local conf = require('telescope.config').values
   local finders = require('telescope.finders')
   local make_entry = require('telescope.make_entry')
-  local previewers = require('telescope.previewers')
   local setup_opts = require('mkdn.config').setup().telescope
   opts = vim.tbl_extend('force', setup_opts, opts or {})
 
@@ -230,15 +223,6 @@ local md_grep_telescope = function(opts)
     local prompt_parts
     if not prompt or prompt == '' then
       prompt = [[^#\s]]
-      -- output the first line of files in the list
-      -- local w = {}
-      -- for i, v in ipairs(where or {}) do
-      --   table.insert(w, v .. ':1:1:')
-      -- end
-      -- w = table.concat(w, '\n')
-      --
-      -- w = w .. '\n'
-      -- return vim.tbl_flatten({ 'printf', w })
     end
     prompt_parts = vim.split(prompt, ' ')
     local cmd = vim.tbl_flatten({ args, prompt_parts, where })
@@ -288,5 +272,6 @@ end
 return {
   md_files = md_files,
   md_list = md_list,
-  md_grep = md_grep_telescope,
+  md_grep = md_grep,
+  md_tag = grep_tag,
 }
