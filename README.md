@@ -20,6 +20,7 @@ require('mkdn').list_files({filter = {tags = {'tag1', 'tag2'}, type = 'note'}})
 ```
 
 Or
+
 ```vim
 MkdnFiles tags=tag1,tag2 type=note
 ```
@@ -31,26 +32,28 @@ require('mkdn').grep_files({filter={tags = {'tag1', 'tag2'}, type = 'daily'}})
 ```
 
 Or
+
 ```vim
 MkdnGrep tags=tag1,tag2 type=daily
 ```
 
 #### Search tags/page references
+
 It searches
+
 - tags in frontmatter
 - page references in markdown
 - wiki links in markdown
 
 ```lua
 require('mkdn').grep_tags({default = 'tag1'})
-
 ```
 
 Or
+
 ```vim
 MkdnTags tag1
 ```
-
 
 ### Fold
 
