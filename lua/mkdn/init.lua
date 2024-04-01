@@ -12,5 +12,5 @@ end
 return {
   setup = setup,
   list_files = require('mkdn.finder').md_files,
-  grep_files = require('mkdn.finder').md_grep_telescope,
+  grep_files = require('mkdn.finder').md_grep,
 }

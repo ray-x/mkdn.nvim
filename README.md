@@ -19,10 +19,20 @@ List files with frontmatter key and value
 require('mkdn').md_files({filter = {tags = {'tag1', 'tag2'}, type = 'note'}})
 ```
 
+Or
+```vim
+MkdnFiles tags=tag1,tag2 type=note
+```
+
 Live grep files with frontmatter key and value
 
 ```lua
 require('mkdn').md_grep({filter={tags = {'tag1', 'tag2'}, type = 'daily'}})
+```
+
+Or
+```vim
+MkdnGrep tags=tag1,tag2 type=daily
 ```
 
 ### Fold
