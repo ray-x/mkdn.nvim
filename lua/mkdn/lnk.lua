@@ -1,3 +1,4 @@
+local log = require('mkdn.utils').log
 local function fetch_and_paste_url_title()
   -- Get content of the unnamed register
   local url = vim.fn.getreg('*')
@@ -22,7 +23,6 @@ local function fetch_and_paste_url_title()
   local markdown_link = string.format('[%s](%s)', title, url)
   vim.api.nvim_put({ markdown_link }, 'l', true, true)
 end
-
 
 local setup_opts = {
   auto_quoting = true,
@@ -50,6 +50,7 @@ local function find_word_under_cursor()
   }
 end
 
+-- for concealed text
 local function find_link_under_cursor()
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2]
@@ -62,6 +63,7 @@ local function find_link_under_cursor()
     end_col = end_col + 1
   end
   local link = line:match('%[.*%]%((.*)%)', start_col)
+  log(link)
   if link then
     return {
       url = link,
@@ -93,14 +95,11 @@ local function follow_link()
     else
       -- create a link
       local filename = string.lower(word.text:gsub('%s', '_') .. '.md')
+      vim.notify('Creating link to ' .. filename)
       vim.cmd('norm! "_ciW[' .. word.text .. '](' .. filename .. ')')
     end
   end
 end
-
-vim.keymap.set('n', 'gx', function()
-  follow_link()
-end, { expr = true, noremap = true })
 
 -- local test_telescope = function()
 -- md_grep_telescope({

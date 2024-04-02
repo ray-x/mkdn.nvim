@@ -76,6 +76,16 @@ local function parseFrontmatter(fileContent)
   return frontmatter
 end
 
+local log = function(...)
+  if require('mkdn').config.debug then
+    if lprint then
+      lprint(...)
+    else
+      print(vim.inspect(...))
+    end
+  end
+end
+
 local filecontent1 = [[
 ---
 title: My title
@@ -117,5 +127,6 @@ This is the content
 return {
   readFirstNLines = readFirstNLines,
   parseFrontmatter = parseFrontmatter,
+  log = log,
 }
 

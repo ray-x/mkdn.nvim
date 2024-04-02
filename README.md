@@ -15,6 +15,17 @@ mkdn.nvim is markdown toolkit for neovim.
 
 #### List files with frontmatter key and value
 
+Suppose you have a note with frontmatter like this
+
+```yml
+---
+tags:
+  - tag1
+  - tag2
+type: note
+title: "Note Title"
+```
+
 ```lua
 require('mkdn').list_files({filter = {tags = {'tag1', 'tag2'}, type = 'note'}})
 ```
@@ -60,3 +71,12 @@ MkdnTags tag1
 make sure treesitter is installed and markdown parser is enabled
 
 set foldexpr to treesitter
+
+## Config
+
+```lua
+require('mkdn').setup{
+  follow_link = 'gx',  -- keymap to follow link
+  fetch_and_paste_url_title = '<leader>u'
+}
+```
