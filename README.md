@@ -98,6 +98,13 @@ make sure treesitter markdown parser is installed
 
 set foldexpr to treesitter
 
+### Table of Content
+
+It is already implemented in lsp. But a Cmdline command is provided to open the table of content
+
+`MkdnToc` open table of content in quickfix
+`MkdnTocTelescope` open table of content in Telescope
+
 ## Config
 
 ```lua
@@ -106,3 +113,5 @@ require('mkdn').setup{
   fetch_and_paste_url_title = '<leader>u'  -- keymap to fetch and paste url title
 }
 ```
+
+

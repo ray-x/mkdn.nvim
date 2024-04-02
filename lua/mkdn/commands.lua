@@ -59,3 +59,15 @@ end, {
     return { 'key:value' }
   end,
 })
+
+vim.api.nvim_create_user_command('MkdnToc', function()
+  vim.lsp.buf.document_symbol()
+end, {
+  nargs = 0,
+})
+
+vim.api.nvim_create_user_command('MkdnTocTelescope', function()
+  vim.cmd('Telescope lsp_document_symbols')
+end, {
+  nargs = 0,
+})
