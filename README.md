@@ -12,7 +12,9 @@ Paste from clipboard and convert to markdown link, e.g. paste url `https://githu
 `[GitHub: Let’s build from here · GitHub](https://github.com/)` to your markdown file
 
 {% note %}
+
 **Note:** require `curl`
+
 {% endnote %}
 
 - Follow URL
@@ -28,8 +30,10 @@ It will open url in browser; if it is a local file, it will open in neovim
 | [[sample#^37066d]]                          | open `sample.md` and jump to block `^37066d` with LSP            |
 
 {% note %}
+
 **Note:** To open wiki link in neovim, you need config a markdown LSP, e.g. **marksman** or **markdown-oxide**, also please
 check the LSP documentation for the supported URL format
+
 {% endnote %}
 
 ### Search
