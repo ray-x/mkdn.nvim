@@ -1,5 +1,4 @@
-
-local function readFirstNLines(filePath, N)
+local function read_first_nlines(filePath, N)
   local lines = {}
   local file = io.open(filePath, 'r')
   if file then
@@ -18,13 +17,11 @@ local function readFirstNLines(filePath, N)
   return lines
 end
 
-
-local function parseFrontmatter(fileContent)
+local function parse_frontmatter(fileContent)
   local frontmatter = {}
   local inFrontmatter = false
   local currentKey, currentList, currentIndent
   if type(fileContent) == 'string' then
-    -- split the string into lines
     fileContent = vim.split(fileContent, '\n', true)
   end
 
@@ -50,13 +47,13 @@ local function parseFrontmatter(fileContent)
         end
       end
 
-      if not currentKey then -- Process a new key or a non-list line
+      if not currentKey then
         local key, value = line:match('^(%w+):%s*(.*)$')
         if key then
-          if value == '' then -- Prepare for a list in the second format
+          if value == '' then
             currentKey, currentList = key, {}
             currentIndent = #line:match('^%s*')
-          elseif value:match('^%[.*%]$') then -- Array in the first format
+          elseif value:match('^%[.*%]$') then -- Array in the [] format
             frontmatter[key] = {}
             for item in value:gmatch('[%w_-]+') do
               table.insert(frontmatter[key], item)
@@ -69,7 +66,7 @@ local function parseFrontmatter(fileContent)
     end
   end
 
-  if currentKey and currentList then -- Handle case where EOF is reached while parsing a list
+  if currentKey and currentList then --  EOF is reached while parsing a list
     frontmatter[currentKey] = currentList
   end
   -- print(vim.inspect(frontmatter))
@@ -77,7 +74,7 @@ local function parseFrontmatter(fileContent)
 end
 
 local log = function(...)
-  if require('mkdn').config.debug then
+  if require('mkdn').config().debug then
     if lprint then
       lprint(...)
     else
@@ -121,12 +118,10 @@ This is the content
 --   '---',
 -- }
 
--- print(vim.inspect(parseFrontmatter(filecontent1)))
--- parseFrontmatter(filecontent2)
+-- print(vim.inspect(parse_frontmatter(filecontent1)))
 
 return {
-  readFirstNLines = readFirstNLines,
-  parseFrontmatter = parseFrontmatter,
+  read_first_nlines = read_first_nlines,
+  parse_frontmatter = parse_frontmatter,
   log = log,
 }
-

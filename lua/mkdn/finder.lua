@@ -1,5 +1,10 @@
-local readFirstNLines = require('mkdn.utils').readFirstNLines
-local parseFrontmatter = require('mkdn.utils').parseFrontmatter
+local readFirstNLines = require('mkdn.utils').read_first_nlines
+
+-- local setup_opts = {
+--   auto_quoting = true,
+--   mappings = {},
+-- }
+local parseFrontmatter = require('mkdn.utils').parse_frontmatter
 local function contains_all(table1, table2)
   for key, value in pairs(table2) do
     if not vim.tbl_contains(table1, value) then
@@ -18,7 +23,7 @@ local function contains_any(table1, table2)
   return false
 end
 
-local function searchMarkdownFiles(dir, N, criteria, matches)
+local function search_mkdn_files(dir, N, criteria, matches)
   matches = matches or {}
   local handle, err = vim.loop.fs_scandir(dir)
   if not handle then
@@ -34,7 +39,7 @@ local function searchMarkdownFiles(dir, N, criteria, matches)
 
     local filePath = dir .. '/' .. name
     if ftype == 'directory' then
-      searchMarkdownFiles(filePath, N, criteria, matches) -- Recursive call
+      search_mkdn_files(filePath, N, criteria, matches) -- Recursive call
     elseif ftype == 'file' and name:match('%.md$') then
       local fileContent = readFirstNLines(filePath, N)
       if not fileContent then
@@ -66,7 +71,7 @@ end
 local function md_list(criteria, N)
   N = N or 20
   local currentDir = vim.fn.getcwd() -- Get the current working directory
-  return searchMarkdownFiles(currentDir, N, criteria)
+  return search_mkdn_files(currentDir, N, criteria)
 end
 
 -- print(vim.inspect(md_search({}, 40)))
@@ -122,7 +127,7 @@ local grep_tag = function(opts)
   local finders = require('telescope.finders')
   local make_entry = require('telescope.make_entry')
   local previewers = require('telescope.previewers')
-  local setup_opts = require('mkdn.config').setup().telescope
+  local setup_opts = require('mkdn.config').config().telescope
   opts = vim.tbl_extend('force', setup_opts, opts or {})
 
   opts.vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
@@ -196,7 +201,7 @@ local md_grep = function(opts)
   local conf = require('telescope.config').values
   local finders = require('telescope.finders')
   local make_entry = require('telescope.make_entry')
-  local setup_opts = require('mkdn.config').setup().telescope
+  local setup_opts = require('mkdn.config').config().telescope
   opts = vim.tbl_extend('force', setup_opts, opts or {})
 
   opts.vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
@@ -244,10 +249,6 @@ local md_grep = function(opts)
   end
 
   local finder = function()
-    local prompt_bufnr = vim.api.nvim_get_current_buf()
-    local action_state = require('telescope.actions.state')
-    local action_utils = require('telescope.actions.utils')
-    local current_picker = action_state.get_current_picker(prompt_bufnr)
     return finders.new_job(cmd_generator, opts.entry_maker, opts.max_results, opts.cwd)
   end
 

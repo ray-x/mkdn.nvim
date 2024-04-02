@@ -1,13 +1,16 @@
 local M = {}
-M.config = {
-  follow_link = 'gx',
-  paste_link = '<leader>u',
-  telescope = {},
-}
+M.config = function()
+  return M._config
+end
 
 M.setup = function(cfg)
-  M.config = vim.tbl_extend('force', M.config, cfg or {})
-  return M.config
+  M._config = {
+    follow_link = 'gx',
+    paste_link = '<leader>u',
+    telescope = {},
+  }
+  M._config = vim.tbl_extend('force', M._config, cfg or {})
+  return M._config
 end
 
 return M

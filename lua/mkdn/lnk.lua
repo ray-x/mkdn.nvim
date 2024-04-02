@@ -9,7 +9,7 @@ local function fetch_and_paste_url_title()
     return
   end
 
-  -- Use curl to fetch the webpage content. Adjust timeout as necessary.
+  -- Use curl to fetch the webpage content.
   local cmd = string.format('curl -m 5 -s %s', vim.fn.shellescape(url))
   local result = vim.fn.system(cmd)
 
@@ -24,96 +24,67 @@ local function fetch_and_paste_url_title()
   vim.api.nvim_put({ markdown_link }, 'l', true, true)
 end
 
-local setup_opts = {
-  auto_quoting = true,
-  mappings = {},
-}
+local function find_link_under_cursor()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  row = row - 1 -- Adjust the row to 0-indexed.
 
-local function find_word_under_cursor()
-  local line = vim.api.nvim_get_current_line()
-  local col = vim.api.nvim_win_get_cursor(0)[2]
-  local start_col = col
-  local end_col = col
-  while start_col > 0 and line:sub(start_col, start_col):match('%w') do
-    start_col = start_col - 1
-  end
-  while end_col < #line and line:sub(end_col, end_col):match('%w') do
-    end_col = end_col + 1
-  end
-  if start_col == end_col then
+  local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+  if not line then
+    log('no line found')
     return nil
   end
-  return {
-    text = line:sub(start_col + 1, end_col),
-    start_col = start_col + 1,
-    end_col = end_col,
-  }
-end
 
--- for concealed text
-local function find_link_under_cursor()
-  local line = vim.api.nvim_get_current_line()
-  local col = vim.api.nvim_win_get_cursor(0)[2]
-  local start_col = col
-  local end_col = col
-  while start_col > 0 and line:sub(start_col, start_col):match('%w') do
-    start_col = start_col - 1
+  local pattern = '()(%b[])%((.-)%)()'
+
+  for startPos, markdownText, link, endPos in line:gmatch(pattern) do
+    -- Adjust for Lua's 1-indexing in string patterns.
+    startPos, endPos = startPos - 1, endPos - 1
+
+    if col >= startPos and col <= endPos then
+      -- Check if the link is an HTTP URL or a local file path.
+      if link:match('^https?://') then
+        return {
+          url = link,
+          start_col = startPos,
+          end_col = endPos,
+        }
+      else
+        return {
+          path = link,
+          start_col = startPos,
+          end_col = endPos,
+        }
+      end
+    end
   end
-  while end_col < #line and line:sub(end_col, end_col):match('%w') do
-    end_col = end_col + 1
-  end
-  local link = line:match('%[.*%]%((.*)%)', start_col)
-  log(link)
-  if link then
-    return {
-      url = link,
-      start_col = start_col + 1,
-      end_col = end_col,
-    }
-  end
+  log('no link found')
   return nil
 end
 
 local function follow_link()
-  local word = find_word_under_cursor()
   local link = find_link_under_cursor() -- matches []() links only
-  if link and link.url then
-    if link.url:match('^https?://') then
-      -- a link
-      vim.ui.open(link.url)
-    elseif link.url:match('^#') then
-      -- an anchor
-      vim.fn.search('^#* ' .. link.url:sub(2))
-    else
-      -- a file
-      vim.cmd('e ' .. link.url)
-    end
-  elseif word then
-    if word.text:match('^https?://') then
-      -- Bare url i.e without link syntax
-      vim.ui.open(word.text)
-    else
-      -- create a link
-      local filename = string.lower(word.text:gsub('%s', '_') .. '.md')
-      vim.notify('Creating link to ' .. filename)
-      vim.cmd('norm! "_ciW[' .. word.text .. '](' .. filename .. ')')
+  log('found link: ', link)
+  if link then
+    if link.url then
+      return vim.ui.open(link.url)
+    elseif link.path then
+      vim.schedule(function()
+        return vim.cmd('silent edit ' .. link.path)
+      end)
     end
   end
+  log('lsp definition')
+  vim.schedule(function()
+    return vim.lsp.buf.definition()
+  end)
 end
 
--- local test_telescope = function()
--- md_grep_telescope({
---   search_files = {
---     '/Users/rayxu/Library/CloudStorage/Dropbox/obsidian/work/cms.md',
---     '/Users/rayxu/Library/CloudStorage/Dropbox/obsidian/work/rec.md',
---   },
---   -- search_dirs = {
---   --   '/Users/rayxu/Library/CloudStorage/Dropbox/obsidian/work',
---   -- },
--- })
--- end
+-- [google](https://google.com)
+-- [readme](README.md)
+-- [[sample]]
 
--- test_telescope()
+follow_link()
 
 return {
   fetch_and_paste_url_title = fetch_and_paste_url_title,
