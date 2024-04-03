@@ -148,5 +148,4 @@ There are good resurces and setups for markdown note taking, here are some of th
 ## Screenshot
 
 ## Table of Content and Link references
-
-![mkdn](https://gist.github.com/assets/1681295/36f671a7-1f15-49dd-9220-f488b4aac883.jpg)
+![image](https://github.com/ray-x/mkdn.nvim/assets/1681295/15d0ca22-da99-4e6f-a016-7f24a90354b8)
