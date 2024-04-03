@@ -131,6 +131,7 @@ You can use Telescope or [navigator.lua](https://github.com/ray-x/navigator.lua)
 | -------------------------- | ---------------------------------------- |
 | `MkdnNew {subfolder/name}` | create a new note with frontmatter       |
 | `MkdnDaily {name}`         | create a new daily note with frontmatter |
+| `MkdnListNotes`            | list all notes in note_root              |
 
 > [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note name.md in subfolder of note_root.  Default note_root is `~/notes`. If name is not provided, it will prompt for a note name or default to a hash string
 

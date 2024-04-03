@@ -3,12 +3,15 @@
 local function new_note(opts)
   local note_name = opts[1]
   if not note_name then
-    vim.ui.input({prompt = 'Note name: ', default = os.date('%Y-%m-%d_%H:%M:%S')}, function(result)
-      if not result then
-        note_name = os.date('%Y-%m-%d_%H:%M:%S')
+    vim.ui.input(
+      { prompt = 'Note name: ', default = os.date('%Y-%m-%d_%H:%M:%S') },
+      function(result)
+        if not result then
+          note_name = os.date('%Y-%m-%d_%H:%M:%S')
+        end
+        note_name = result
       end
-      note_name = result
-    end)
+    )
   end
   local note_path = os.getenv('HOME') .. '/notes/'
   if require('mkdn.config').config().notes_path then
@@ -103,7 +106,26 @@ vim.api.nvim_create_user_command('MkdnNewNote', new_note, {
 
 vim.api.nvim_create_user_command('MkdnNewDaily', new_daily, {
   nargs = 1,
-  complete = os.date('%Y-%m-%d'),
+  -- complete = os.date('%Y-%m-%d'),
+  bang = false,
+  bar = false,
+  range = false,
+})
+
+-- A Telescope cmd to list all notes
+local function list_notes()
+  local notes_path = os.getenv('HOME') .. '/notes/'
+  if require('mkdn.config').config().notes_path then
+    notes_path = require('mkdn.config').config().notes_path
+  end
+  require('telescope.builtin').find_files({
+    prompt_title = 'Notes',
+    cwd = notes_path,
+  })
+end
+
+vim.api.nvim_create_user_command('MkdnListNotes', list_notes, {
+  nargs = 0,
   bang = false,
   bar = false,
   range = false,

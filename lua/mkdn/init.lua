@@ -28,6 +28,7 @@ local function setup(cfg)
   end
 
   require('mkdn.commands')
+  require('mkdn.notes')
 end
 
 return {
