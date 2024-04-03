@@ -74,7 +74,6 @@ MkdnGrep tags=tag1,tag2 type=daily
 
 User case: search all notes with tag `python` and `ML` and do a live grep for `scipy`
 
-````lua
 #### Search tags/page references
 
 It searches
@@ -85,7 +84,7 @@ It searches
 
 ```lua
 require('mkdn').grep_tags({default = 'tag1'})
-````
+```
 
 Or
 
@@ -104,6 +103,8 @@ set foldexpr to treesitter
 It is already implemented in lsp. But a Cmdline command is provided to open the table of content
 
 `MkdnToc` open table of content in quickfix `MkdnTocTelescope` open table of content in Telescope
+
+You can also use [navigator.lua](https://github.com/ray-x/navigator.lua) LspSymbol to navigate the table of content
 
 ## Config
 
@@ -133,8 +134,9 @@ You can use Telescope or [navigator.lua](https://github.com/ray-x/navigator.lua)
 | `MkdnDaily {name}`         | create a new daily note with frontmatter |
 | `MkdnListNotes`            | list all notes in note_root              |
 
-> [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note name.md in subfolder of note_root.  Default note_root is `~/notes`. If name is not provided, it will prompt for a note name or default to a hash string
-
+> [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note
+> name.md in subfolder of note_root. Default note_root is `~/notes`. If name is not provided, it will prompt for a note
+> name or default to a hash string
 
 ## Cridit
 
@@ -148,4 +150,5 @@ There are good resurces and setups for markdown note taking, here are some of th
 ## Screenshot
 
 ## Table of Content and Link references
+
 ![image](https://github.com/ray-x/mkdn.nvim/assets/1681295/15d0ca22-da99-4e6f-a016-7f24a90354b8)
