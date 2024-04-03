@@ -1,6 +1,9 @@
 -- Create new note with Command NewNote notename
+local log = require('mkdn.utils').log
 
 local function new_note(opts)
+  log(opts)
+  opts = opts.fargs
   local note_name = opts[1]
   if not note_name then
     vim.ui.input(
@@ -63,6 +66,8 @@ local function new_daily(opts)
   if require('mkdn.config').config().daily_path then
     note_path = require('mkdn.config').config().daily_path
   end
+
+  opts = opts.fargs
   if opts[1] then
     note_name = opts[1]
   end
@@ -71,7 +76,7 @@ local function new_daily(opts)
   -- check if file exists
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
-    return vim.cmd('e ' .. note_path)
+    return vim.cmd('noautocmd e ' .. note_path)
   end
 
   local note = io.open(note_path, 'w')

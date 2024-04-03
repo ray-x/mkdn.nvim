@@ -16,7 +16,8 @@ Paste from clipboard and convert to markdown link, e.g. paste url `https://githu
 
 - Follow URL
 
-It will open url in browser; if it is a local file, it will open in neovim
+A keybinding to open url in browser; if it is a local file, it will open in neovim,
+The feature utilize LSP to open wiki link in neovim
 
 | URL                                         | Action                                                           |
 | ------------------------------------------- | ---------------------------------------------------------------- |
