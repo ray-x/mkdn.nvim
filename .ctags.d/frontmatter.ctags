@@ -1,0 +1,17 @@
+--_tabledef-markdown=main
+--_tabledef-markdown=frontmatter
+--_tabledef-markdown=fmtags
+
+--_mtable-regex-markdown=main/---//{tenter=frontmatter}
+--_mtable-regex-markdown=main/:([a-zA-Z][a-zA-Z0-9]*):/\1/t/{mgroup=1}{_advanceTo=1end}
+--_mtable-regex-markdown=main/.//
+
+--_mtable-regex-markdown=frontmatter/^tags: *//{tenter=fmtags}
+--_mtable-regex-markdown=frontmatter/---//{tleave}
+--_mtable-regex-markdown=frontmatter/.//
+
+--_mtable-regex-markdown=fmtags/([a-zA-Z][a-zA-Z0-9]*)/\1/d/
+--_mtable-regex-markdown=fmtags/\]//{tleave}
+--_mtable-regex-markdown=fmtags/://{tleave}
+--_mtable-regex-markdown=fmtags/---//{tleave}{_advanceTo=0start}
+--_mtable-regex-markdown=fmtags/.//
