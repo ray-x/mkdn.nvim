@@ -149,4 +149,4 @@ There are good resurces and setups for markdown note taking, here are some of th
 
 ## Table of Content and Link references
 
-![screenshot_sample_toc](https://gist.github.com/assets/1681295/36f671a7-1f15-49dd-9220-f488b4aac883)
+![mkdn](https://gist.github.com/assets/1681295/36f671a7-1f15-49dd-9220-f488b4aac883.jpg)
