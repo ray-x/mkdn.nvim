@@ -16,8 +16,8 @@ Paste from clipboard and convert to markdown link, e.g. paste url `https://githu
 
 - Follow URL
 
-A keybinding to open url in browser; if it is a local file, it will open in neovim,
-The feature utilize LSP to open wiki link in neovim
+A keybinding to open url in browser; if it is a local file, it will open in neovim, The feature utilize LSP to open wiki
+link in neovim
 
 | URL                                         | Action                                                           |
 | ------------------------------------------- | ---------------------------------------------------------------- |
@@ -129,15 +129,68 @@ You can use Telescope or [navigator.lua](https://github.com/ray-x/navigator.lua)
 
 ### Create new note
 
+The plugin allow you to capture your ideas quickly with a template
+
+
 | command                    | description                              |
 | -------------------------- | ---------------------------------------- |
 | `MkdnNew {subfolder/name}` | create a new note with frontmatter       |
 | `MkdnDaily {name}`         | create a new daily note with frontmatter |
+| `MkdnCapture`       | create note from your selected template  |
 | `MkdnListNotes`            | list all notes in note_root              |
 
 > [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note
 > name.md in subfolder of note_root. Default note_root is `~/notes`. If name is not provided, it will prompt for a note
 > name or default to a hash string
+
+### Capture ideas and template setup
+
+Capture allows you to create a note without interrupting your workflow.
+You can define a template for your notes. The default template is defined in config.lua
+
+```lua
+  {
+    templates = {
+      _meta = { -- meta data for templates
+        -- some default value for templates e.g. {{auther}}
+        author = os.getenv('USER'),  -- replace {{auther}}
+        date = os.date('%Y-%m-%d'),  -- replace {{date}} in template
+      },
+      daily = {                       -- `daily` note template
+        name = function()             -- default name for daily note
+          return os.date('%Y-%m-%d')
+        end, -- or a function that returns the name
+        path = 'journal/',            -- default path for daily note inside note_root
+        content = {                   -- content of daily note
+          function()                  -- content can be a function return a string or a table
+            return frontmatter({ tags = 'daily', category = 'daily' })
+          end,                        -- frontmatter generates frontmatter
+          '# {{name}}',               -- content item can be a string with meta data
+          '\n',                       -- extra empty line
+          '## Tasks',
+          '- [ ] Task 1',
+        },
+      },
+      default = {
+        path = '',
+        name = function()
+          -- default name with random number in hex
+          vim.ui.input({
+            prompt = 'Note name: ',
+            default = 'default_' .. string.format('%x', math.random(16, 1000000)):sub(1, 4),
+          }, function(result)
+            return result
+          end)
+        end, -- or a function that returns the name
+        content = {
+          function()
+            return frontmatter({ category = 'note' })
+          end,
+          '# {{name}}',
+        },
+      },
+    }
+```
 
 ## Cridit
 
