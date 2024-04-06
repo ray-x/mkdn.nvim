@@ -84,13 +84,13 @@ It searches
 - wiki links in markdown
 
 ```lua
-require('mkdn').grep_tags({default = 'tag1'})
+require('mkdn').grep_tag({default_text = 'tag1'})
 ```
 
 Or
 
 ```vim
-MkdnTags tag1
+MkdnTag tag1
 ```
 
 ### Fold
