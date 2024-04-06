@@ -9,8 +9,14 @@ markdown editing experience.
 
 - Paste URL
 
-Paste from clipboard and convert to markdown link, e.g. paste url `https://github.com/` will insert
-`[GitHub: Let’s build from here · GitHub](https://github.com/)` to your markdown file
+  - Paste from clipboard and convert to markdown link,
+e.g. paste url `https://github.com/` will insert
+`[GitHub: Let’s build from here · GitHub](https://github.com/)`
+to your markdown file
+
+  - If the URL is a image URL, it will download the URL and
+insert `![image](url)` to your markdown file
+
 
 > [!NOTE]<br> requires `curl`
 
@@ -112,7 +118,13 @@ You can also use [navigator.lua](https://github.com/ray-x/navigator.lua) LspSymb
 ```lua
 require('mkdn').setup{
   follow_link = 'gx',  -- keymap to follow link set to false to disable
-  fetch_and_paste_url_title = '<leader>u'  -- keymap to fetch and paste url title
+  paste_link = '<leader>u',  -- keymap to fetch and paste url title
+  templates = {
+    -- see below: templates setup
+  },
+  note_root = '~/notes',  -- default note root
+  assets_path = 'assets',  -- default assets path, a subfolder of note_root
+  author = os.getenv('USER'),  -- default author
 }
 ```
 
@@ -143,7 +155,7 @@ The plugin allow you to capture your ideas quickly with a template
 > name.md in subfolder of note_root. Default note_root is `~/notes`. If name is not provided, it will prompt for a note
 > name or default to a hash string
 
-### Capture ideas and template setup
+### Capture ideas and templates setup
 
 Capture allows you to create a note without interrupting your workflow.
 You can define a template for your notes. The default template is defined in config.lua
@@ -160,7 +172,7 @@ You can define a template for your notes. The default template is defined in con
         name = function()             -- default name for daily note
           return os.date('%Y-%m-%d')
         end, -- or a function that returns the name
-        path = 'journal/',            -- default path for daily note inside note_root
+        path = 'journal',            -- default path for daily note inside note_root
         content = {                   -- content of daily note
           function()                  -- content can be a function return a string or a table
             return frontmatter({ tags = 'daily', category = 'daily' })
@@ -194,7 +206,7 @@ You can define a template for your notes. The default template is defined in con
 
 ## Cridit
 
-There are good resurces and setups for markdown note taking, here are some of them
+There are good resources and setups for markdown note taking, here are some of them
 
 - [A Vim Note-Taking System &middot; caerul](https://caerul.net/post/a-vim-notetaking-system/)
 - [Custom Note Tagging System with Ctags and Vim](https://www.edwinwenink.xyz/posts/43-notes_tagging/)

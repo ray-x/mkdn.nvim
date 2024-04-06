@@ -22,7 +22,7 @@ local function parse_frontmatter(fileContent)
   local inFrontmatter = false
   local currentKey, currentList, currentIndent
   if type(fileContent) == 'string' then
-    fileContent = vim.split(fileContent, '\n', true)
+    fileContent = vim.split(fileContent, '\n', { plain = true })
   end
 
   for _, line in ipairs(fileContent) do
@@ -72,7 +72,6 @@ local function parse_frontmatter(fileContent)
   -- print(vim.inspect(frontmatter))
   return frontmatter
 end
-
 local log = function(...)
   if require('mkdn').config().debug then
     if lprint then

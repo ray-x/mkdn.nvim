@@ -38,8 +38,10 @@ M.setup = function(cfg)
     paste_link = '<leader>u',
     telescope = {},
     note_root = os.getenv('HOME') .. '/notes',
-    note_path = os.getenv('HOME') .. '/notes',
-    daily_path = os.getenv('HOME') .. '/notes',
+    note_path = '',
+    daily_path = '',
+    assets_path = 'assets',
+    assets_pattern = [[\\v\\.(png|jpg|jpeg|gif|svg|pdf|mp4|webm|zip|tar|gz|7z|rar|mp3|wav|flac|ogg|docx|pptx|xlsx|csv|json|xml|yaml|toml|ts|go|py|rb|java|c|cpp|rs|lua|sh|bash|zsh|fish|ps1|bat|cmd|txt|md|org|tex|vim|yaml|yml|toml|json|scss|sass|less|js|ts|jsx|tsx|vue|py|rb|java|c|cpp|h|hpp|rs|lua|sh|bash|zsh|fish|ps1|bat|cmd|txt|md|org|tex|vim)$]],
     author = os.getenv('USER'),
     templates = {
       _meta = { -- meta data for templates
@@ -51,7 +53,7 @@ M.setup = function(cfg)
         name = function()
           return os.date('%Y-%m-%d')
         end, -- or a function that returns the name
-        path = 'journal/',
+        path = 'journal',
         content = {
           function()
             return frontmatter({ tags = 'daily', category = 'daily' })

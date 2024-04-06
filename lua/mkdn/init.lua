@@ -19,7 +19,7 @@ local function setup(cfg)
     vim.keymap.set(
       { 'n', 'x' },
       key,
-      require('mkdn.lnk').fetch_and_paste_url_title,
+      require('mkdn.lnk').fetch_and_paste_url,
       {
         noremap = true,
         desc = 'Fetch the title of the URL under the cursor and paste it as a Markdown link',

@@ -26,7 +26,9 @@ local function new_note(opts)
 end
 
 local function new_daily(opts)
-  M.new_note_from_template(require('mkdn.config').config().templates.daily)
+  local cfg = require('mkdn.config').config().templates.daily
+  local daily = vim.tbl_deep_extend('force', {}, cfg, opts)
+  M.new_note_from_template(daily)
 end
 
 vim.api.nvim_create_user_command('MkdnNewNote', new_note, {
@@ -46,15 +48,12 @@ vim.api.nvim_create_user_command('MkdnNewDaily', new_daily, {
 })
 
 M.new_note_from_template = function(template)
-  local note_root = os.getenv('HOME') .. '/notes/'
-  if require('mkdn.config').config().notes_root then
-    note_root = require('mkdn.config').config().notes_root
-  end
+  local note_root = require('mkdn.config').config().notes_root
   local templates = require('mkdn.config').config().templates
   if not template then
     template = templates.default
   end
-  local path = template.path and template.path .. '/' or ''
+  local path = template.path and template.path .. '/' or '/'
   local file_path = note_root .. path
   local note_name
   log(template)
@@ -139,10 +138,7 @@ end
 
 -- A Telescope cmd to list all notes
 local function list_notes()
-  local notes_path = os.getenv('HOME') .. '/notes/'
-  if require('mkdn.config').config().notes_path then
-    notes_path = require('mkdn.config').config().notes_path
-  end
+  notes_path = require('mkdn.config').config().notes_root
   require('telescope.builtin').find_files({
     prompt_title = 'Notes',
     cwd = notes_path,
