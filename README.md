@@ -9,14 +9,10 @@ markdown editing experience.
 
 - Paste URL
 
-  - Paste from clipboard and convert to markdown link,
-e.g. paste url `https://github.com/` will insert
-`[GitHub: Let’s build from here · GitHub](https://github.com/)`
-to your markdown file
+  - Paste from clipboard and convert to markdown link, e.g. paste url `https://github.com/` will insert
+    `[GitHub: Let’s build from here · GitHub](https://github.com/)` to your markdown file
 
-  - If the URL is a image URL, it will download the URL and
-insert `![image](url)` to your markdown file
-
+  - If the URL is a image URL, it will download the image locally and insert `![image](url)` to your markdown file
 
 > [!NOTE]<br> requires `curl`
 
@@ -123,7 +119,7 @@ require('mkdn').setup{
     -- see below: templates setup
   },
   note_root = '~/notes',  -- default note root
-  assets_path = 'assets',  -- default assets path, a subfolder of note_root
+  assets_path = 'assets',  -- default assets path to store images, a subfolder of note_root
   author = os.getenv('USER'),  -- default author
 }
 ```
@@ -143,12 +139,11 @@ You can use Telescope or [navigator.lua](https://github.com/ray-x/navigator.lua)
 
 The plugin allow you to capture your ideas quickly with a template
 
-
 | command                    | description                              |
 | -------------------------- | ---------------------------------------- |
 | `MkdnNew {subfolder/name}` | create a new note with frontmatter       |
 | `MkdnDaily {name}`         | create a new daily note with frontmatter |
-| `MkdnCapture`       | create note from your selected template  |
+| `MkdnCapture`              | create note from your selected template  |
 | `MkdnListNotes`            | list all notes in note_root              |
 
 > [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note
@@ -157,51 +152,51 @@ The plugin allow you to capture your ideas quickly with a template
 
 ### Capture ideas and templates setup
 
-Capture allows you to create a note without interrupting your workflow.
-You can define a template for your notes. The default template is defined in config.lua
+Capture allows you to create a note without interrupting your workflow. You can define a template for your notes. The
+default template is defined in config.lua
 
 ```lua
-  {
-    templates = {
-      _meta = { -- meta data for templates
-        -- some default value for templates e.g. {{auther}}
-        author = os.getenv('USER'),  -- replace {{auther}}
-        date = os.date('%Y-%m-%d'),  -- replace {{date}} in template
+{
+  templates = {
+    _meta = { -- meta data for templates
+      -- some default value for templates e.g. {{auther}}
+      author = os.getenv('USER'),  -- replace {{auther}}
+      date = os.date('%Y-%m-%d'),  -- replace {{date}} in template
+    },
+    daily = {                       -- `daily` note template
+      name = function()             -- default name for daily note
+        return os.date('%Y-%m-%d')
+      end, -- or a function that returns the name
+      path = 'journal',            -- default path for daily note inside note_root
+      content = {                   -- content of daily note
+        function()                  -- content can be a function return a string or a table
+          return frontmatter({ tags = 'daily', category = 'daily' })
+        end,                        -- frontmatter generates frontmatter
+        '# {{name}}',               -- content item can be a string with meta data
+        '\n',                       -- extra empty line
+        '## Tasks',
+        '- [ ] Task 1',
       },
-      daily = {                       -- `daily` note template
-        name = function()             -- default name for daily note
-          return os.date('%Y-%m-%d')
-        end, -- or a function that returns the name
-        path = 'journal',            -- default path for daily note inside note_root
-        content = {                   -- content of daily note
-          function()                  -- content can be a function return a string or a table
-            return frontmatter({ tags = 'daily', category = 'daily' })
-          end,                        -- frontmatter generates frontmatter
-          '# {{name}}',               -- content item can be a string with meta data
-          '\n',                       -- extra empty line
-          '## Tasks',
-          '- [ ] Task 1',
-        },
+    },
+    default = {
+      path = '',
+      name = function()
+        -- default name with random number in hex
+        vim.ui.input({
+          prompt = 'Note name: ',
+          default = 'default_' .. string.format('%x', math.random(16, 1000000)):sub(1, 4),
+        }, function(result)
+          return result
+        end)
+      end, -- or a function that returns the name
+      content = {
+        function()
+          return frontmatter({ category = 'note' })
+        end,
+        '# {{name}}',
       },
-      default = {
-        path = '',
-        name = function()
-          -- default name with random number in hex
-          vim.ui.input({
-            prompt = 'Note name: ',
-            default = 'default_' .. string.format('%x', math.random(16, 1000000)):sub(1, 4),
-          }, function(result)
-            return result
-          end)
-        end, -- or a function that returns the name
-        content = {
-          function()
-            return frontmatter({ category = 'note' })
-          end,
-          '# {{name}}',
-        },
-      },
-    }
+    },
+  }
 ```
 
 ## Cridit
