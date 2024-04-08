@@ -118,8 +118,8 @@ require('mkdn').setup{
   templates = {
     -- see below: templates setup
   },
-  note_root = '~/notes',  -- default note root
-  assets_path = 'assets',  -- default assets path to store images, a subfolder of note_root
+  notes_root = '~/notes',  -- default note root
+  assets_path = 'assets',  -- default assets path to store images, a subfolder of notes_root
   author = os.getenv('USER'),  -- default author
 }
 ```
@@ -144,11 +144,12 @@ The plugin allow you to capture your ideas quickly with a template
 | `MkdnNew {subfolder/name}` | create a new note with frontmatter       |
 | `MkdnDaily {name}`         | create a new daily note with frontmatter |
 | `MkdnCapture`              | create note from your selected template  |
-| `MkdnListNotes`            | list all notes in note_root              |
+| `MkdnListNotes`            | list all notes in notes_root              |
 
 > [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note
-> name.md in subfolder of note_root. Default note_root is `~/notes`. If name is not provided, it will prompt for a note
+> name.md in subfolder of notes_root. Default notes_root is `~/notes`. If name is not provided, it will prompt for a note
 > name or default to a hash string
+> A template name can be provided as the first argument, e.g. `MkdnNew template_name note_name`
 
 ### Capture ideas and templates setup
 
@@ -167,7 +168,7 @@ default template is defined in config.lua
       name = function()             -- default name for daily note
         return os.date('%Y-%m-%d')
       end, -- or a function that returns the name
-      path = 'journal',            -- default path for daily note inside note_root
+      path = '[journal](journal.md)',            -- default path for daily note inside notes_root
       content = {                   -- content of daily note
         function()                  -- content can be a function return a string or a table
           return frontmatter({ tags = 'daily', category = 'daily' })

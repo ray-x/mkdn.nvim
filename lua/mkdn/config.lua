@@ -37,7 +37,7 @@ M.setup = function(cfg)
     follow_link = 'gx',
     paste_link = '<leader>u',
     telescope = {},
-    note_root = os.getenv('HOME') .. '/notes',
+    notes_root = os.getenv('HOME') .. '/notes',
     note_path = '',
     daily_path = '',
     assets_path = 'assets',
@@ -59,7 +59,7 @@ M.setup = function(cfg)
             return frontmatter({ tags = 'daily', category = 'daily' })
           end,
           '# {{name}}',
-          '\n',
+          '',
           '## Tasks',
           '- [ ] Task 1',
         },
@@ -85,6 +85,14 @@ M.setup = function(cfg)
     },
   }
   M._config = vim.tbl_deep_extend('force', M._config, cfg or {})
+  if M._config.notes_root[#M._config.notes_root] ~= '/' then
+    M._config.notes_root = M._config.notes_root .. '/'
+  end
+  for _, template in pairs(M._config.templates) do
+    if template.path and template.path[#template.path] ~= '/' then
+      template.path = template.path .. '/'
+    end
+  end
   return M._config
 end
 

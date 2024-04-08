@@ -13,10 +13,10 @@ local function download_asset(url)
 
   -- Extract filename from URL
   local filename = url:match('^.+/(.+)$')
-  local note_root = require('mkdn.config').config().note_root
+  local notes_root = require('mkdn.config').config().notes_root
   local assets_path = require('mkdn.config').config().assets_path
   local bang = vim.fn.matchstr(url, image_pattern) ~= '' and '!' or ''
-  local file_path = note_root .. '/' .. assets_path .. '/' .. filename
+  local file_path = notes_root .. '/' .. assets_path .. '/' .. filename
   local assets_rel_path = './' .. assets_path .. '/' .. filename
 
   -- Ensure the assets directory exists

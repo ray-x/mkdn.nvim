@@ -1,68 +1,20 @@
 -- Create new note with Command NewNote notename
 local log = require('mkdn.utils').log
 local M = {}
-
--- use default templates to create note
--- the argument is path/notename
-local function new_note(opts)
-  log(opts)
-  opts = opts.fargs
-  local note_name = opts[1]
-  local default_templates = {}
-  local _defult = require('mkdn.config').config().templates.default
-  default_templates = vim.tbl_deep_extend('force', default_templates, _defult)
-  if note_name ~= nil then
-    -- split path and name
-    local path = string.match(note_name, '(.*)/')
-    local name = string.match(note_name, '/(.*)')
-    if path and name then
-      default_templates.path = path
-      default_templates.name = name
-    else
-      default_templates.name = note_name
-    end
-  end
-  M.new_note_from_template(default_templates)
-end
-
-local function new_daily(opts)
-  local cfg = require('mkdn.config').config().templates.daily
-  local daily = vim.tbl_deep_extend('force', {}, cfg, opts)
-  M.new_note_from_template(daily)
-end
-
-vim.api.nvim_create_user_command('MkdnNewNote', new_note, {
-  nargs = 1,
-  complete = 'file',
-  bang = false,
-  bar = false,
-  range = false,
-})
-
-vim.api.nvim_create_user_command('MkdnNewDaily', new_daily, {
-  nargs = 1,
-  -- complete = os.date('%Y-%m-%d'),
-  bang = false,
-  bar = false,
-  range = false,
-})
+local sep = '/'
 
 M.new_note_from_template = function(template)
-  local note_root = require('mkdn.config').config().notes_root
-  local templates = require('mkdn.config').config().templates
-  if not template then
-    template = templates.default
-  end
-  local path = template.path and template.path .. '/' or '/'
-  local file_path = note_root .. path
-  local note_name
   log(template)
-  if type(template.name) == 'function' then
-    note_name = template.name()
-  else
-    note_name = template.name
+  local cfg = require('mkdn.config').config()
+  local note_root = cfg.notes_root
+  if not template then
+    template = cfg.templates.default
   end
-  local note_path = file_path .. '/' .. note_name .. '.md'
+  local path = template.path and template.path .. sep or sep
+  local file_path = note_root .. path
+  local note_name = type(template.name) == 'function' and template.name() or template.name
+  log('note name: ', note_name)
+  local note_path = file_path .. note_name .. '.md'
   -- check if file exists
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
@@ -70,7 +22,7 @@ M.new_note_from_template = function(template)
   end
   local note = io.open(note_path, 'w')
   if not note then
-    vim.notify('Error: Cannot create note')
+    vim.notify('Error: Cannot create note at ' .. note_path)
     return
   end
 
@@ -111,6 +63,76 @@ M.new_note_from_template = function(template)
   vim.cmd('silent! e ' .. note_path)
 end
 
+-- use default templates to create note
+-- the argument can be
+-- 1. template_name path/note_name
+-- 2. path/note_name
+-- 3. template_name, note_name
+-- 4. note_name
+-- 5. single argumement override a template { template_name = {} } or {} override default
+
+local function new_note(opts)
+  log(opts)
+  opts = opts.fargs
+
+  local cfg = require('mkdn.config').config()
+  local template = vim.tbl_deep_extend('force', {}, cfg.templates.default )
+
+  -- if argument is a table override default template
+  if type(opts[1]) == 'table' then
+    for k, v in pairs(opts[1]) do
+      if cfg.templates[k] then
+        template = vim.tbl_deep_extend('force', cfg.templates[k], v)
+      else
+        template = vim.tbl_deep_extend('force', cfg.templates.default, opts[1])
+      end
+      goto create
+    end
+  end
+
+  -- check if 1st argument is template name
+  if opts[1] and cfg.templates[opts[1]] then
+    template = cfg.templates[opts[1]]
+    table.remove(opts, 1)
+  end
+
+  -- template is default
+  if opts[1] and type(opts[1]) == 'string' then
+    local path = string.match(opts[1], '(.*)/')
+    local name = string.match(opts[1], '/(.*)')
+    if path and name then
+      template.path = path
+      template.name = name
+    else
+      template.name = opts[1]
+    end
+  end
+
+  ::create::
+  M.new_note_from_template(template)
+end
+
+local function new_daily(opts)
+  opts = opts.fargs or {}
+  local cfg = require('mkdn.config').config().templates.daily
+  local daily = vim.tbl_deep_extend('force', {}, cfg)
+
+  M.new_note_from_template(daily)
+end
+
+vim.api.nvim_create_user_command('MkdnNew', new_note, {
+  nargs = '*',
+  bang = false,
+  bar = false,
+  range = false,
+})
+
+vim.api.nvim_create_user_command('MkdnNewDaily', new_daily, {
+  -- nargs = '*',
+  bang = false,
+  bar = false,
+  range = false,
+})
 -- capture note: create a new note with predefined template
 local function capture_note()
   -- write default content include front matter
@@ -138,7 +160,7 @@ end
 
 -- A Telescope cmd to list all notes
 local function list_notes()
-  notes_path = require('mkdn.config').config().notes_root
+  local notes_path = require('mkdn.config').config().notes_root
   require('telescope.builtin').find_files({
     prompt_title = 'Notes',
     cwd = notes_path,
