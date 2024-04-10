@@ -7,7 +7,7 @@ local function download_asset(url)
 
   -- Check if URL ends with an image extension
   if vim.fn.matchstr(url, assets_pattern) ~= '' then
-    print('URL does not point to an image.')
+    vim.notify('URL does not point to an image.')
     return false
   end
 
@@ -24,6 +24,7 @@ local function download_asset(url)
 
   -- Download the image using curl
   local command = string.format("curl -s -o '%s' '%s'", vim.fn.shellescape(file_path), url)
+  log(command)
   local result = os.execute(command)
 
   if result == true or result == 0 then -- os.execute returns true or 0 upon success depending on the Lua version
@@ -33,12 +34,13 @@ local function download_asset(url)
     vim.api.nvim_put({ markdown_link }, 'l', true, true)
     return true
   else
-    vim.notify('Failed to download the image.')
+    vim.notify('Failed to download the image.' .. result)
     return false
   end
 end
 
 -- download_asset('https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png')
+-- download_asset('https://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/nvim-icon.png')
 
 local function fetch_and_paste_url()
   -- Get content of the unnamed register
@@ -46,6 +48,7 @@ local function fetch_and_paste_url()
 
   -- Check if the content is likely a URL
   if not url:match('^https?://') then
+    vim.notify('No URL found in the clipboard.')
     return false
   end
   -- if it is an image URL, download the image and return
@@ -103,8 +106,25 @@ local function find_link_under_cursor()
       end
     end
   end
-  log('no link found')
+  vim.notify('no link found at cursor position')
   return nil
+end
+
+local function image_open(uri)
+  local uv = vim.uv or vim.loop
+  local os_name = uv.os_uname().sysname
+  local is_win = os_name:find('Windows') or os_name:find('MINGW')
+  local is_linux = os_name:find('Linux')
+  local cmd = 'open ' .. uri
+  if is_win then
+    cmd = 'start ' .. uri
+  end
+  if is_linux then
+    cmd = 'xdg-open ' .. uri
+  end
+
+  log(cmd)
+  vim.fn.system(cmd)
 end
 
 local function follow_link()
@@ -114,6 +134,13 @@ local function follow_link()
     if link.url then
       return vim.ui.open(link.url)
     elseif link.path then
+      -- check if path is a local file of image
+      local assets_pattern = require('mkdn.config').config().assets_pattern
+      local assets_path = require('mkdn.config').config().assets_path
+      log(link.path, link.path:find(assets_path), vim.fn.matchstr(link.path, assets_pattern))
+      if link.path:find(assets_path) and vim.fn.matchstr(link.path, assets_pattern) ~= '' then
+        return image_open(link.path)
+      end
       vim.schedule(function()
         return vim.cmd('silent edit ' .. link.path)
       end)
@@ -125,9 +152,11 @@ local function follow_link()
   end)
 end
 
+-- follow_link()
 -- [google](https://google.com)
 -- [readme](README.md)
 -- [[sample]]
+-- ![image](./assets/nvim-icon.png)
 
 -- follow_link()
 

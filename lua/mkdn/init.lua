@@ -11,7 +11,7 @@ local function setup(cfg)
     end, { noremap = true, desc = 'Follow the link under the cursor' })
   end
 
-  if cfg.parse_link then
+  if cfg.paste_link then
     local key = '<leader>u'
     if type(cfg.parse_link) == 'string' then
       key = cfg.parse_link
@@ -29,6 +29,7 @@ local function setup(cfg)
 
   require('mkdn.commands')
   require('mkdn.notes')
+  require('mkdn.gtd')
 end
 
 return {

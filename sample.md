@@ -39,6 +39,11 @@ A wiki page url [[README]] can be handle by marksman and [README](README.md)
 
 [[sample#^37066d]]
 
+image url
+[](https://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/nvim-icon.png)
+
+![image](./assets/nvim-icon.png)
+
 Link to [[README#Search]]
 
 ## Sample Heading2

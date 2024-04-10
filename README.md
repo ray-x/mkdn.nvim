@@ -1,6 +1,6 @@
 # mkdn.nvim
 
-mkdn.nvim is markdown toolkit for neovim. It utilize LSP and telescope/ripgrep universal-ctags to provide a better
+mkdn.nvim is markdown toolkit for neovim. It utilize LSP, telescope/ripgrep and universal-ctags to provide a better
 markdown editing experience.
 
 ## Features
@@ -24,12 +24,14 @@ link in neovim
 | URL                                         | Action                                                           |
 | ------------------------------------------- | ---------------------------------------------------------------- |
 | `[sample.md file](sample.md)`               | open sample.md in neovim                                         |
+| `![image](./assets/sample.png)`             | open sample.png with `open`                                      |
 | `[mkdn](http://github.com/ray-x/mkdn.nvim)` | open URL github.com/ray-x/mkdn.nvim with browser                 |
 | [[sample]]                                  | open wiki link file `sample.md` in neovim with LSP               |
 | [[sample#Sample Heading]]                   | open `sample.md` in neovim and jump to `Sample Heading` with LSP |
 | [[sample#^37066d]]                          | open `sample.md` and jump to block `^37066d` with LSP            |
 
-> [!NOTE] To open wiki link in neovim, you need config a markdown LSP, e.g. **marksman** or **markdown-oxide**, also
+> [!NOTE]
+> To open wiki link in neovim, you need config a markdown LSP, e.g. **marksman** or **markdown-oxide**, also
 > please check the LSP documentation for the supported URL format
 
 ### Search
@@ -95,6 +97,67 @@ Or
 MkdnTag tag1
 ```
 
+### Markdown based task management GTD
+
+A simple task livecircle management with markdown
+
+| Command       | Description      |
+| ------------- | ---------------- |
+| GtdStartTask  | start a new task |
+| GtdPauseTask  | pause a task     |
+| GtdResumeTask | resume a task    |
+| GtdFinishTask | finish a task    |
+
+Usage: suppose you have a task
+
+```markdown
+- [ ] sample task 1
+```
+
+Put cursor on the task and run `GtdStartTask`, it will change the task to
+
+[>] sample task1
+
+```yml
+due:
+time:
+- [08:29]
+total:
+```
+
+Then 'GtdPauseTask' to pause the task, it will change the task to
+
+[|] sample task1
+
+```yml
+due:
+time:
+- [08:29, 08:40]
+total: 11 mins
+```
+
+Then 'GtdResumeTask' to resume the task, it will change the task to
+
+[>] sample task1
+
+```yml
+time:
+- [08:29, 08:40]
+- [08:45]
+total: 11 mins
+```
+
+Then 'GtdFinishTask' to finish the task, it will change the task to
+
+[x] sample task1
+
+```yml
+time:
+- [08:29, 08:40]
+- [08:45, 08:50]
+total: 16 mins
+```
+
 ### Fold
 
 make sure treesitter markdown parser is installed
@@ -124,6 +187,7 @@ require('mkdn').setup{
 }
 ```
 
+````
 ## Use universal-ctags to generate tags
 
 universal-ctags is capable to parse markdown, frontmatter, fenced languages
@@ -144,12 +208,12 @@ The plugin allow you to capture your ideas quickly with a template
 | `MkdnNew {subfolder/name}` | create a new note with frontmatter       |
 | `MkdnDaily {name}`         | create a new daily note with frontmatter |
 | `MkdnCapture`              | create note from your selected template  |
-| `MkdnListNotes`            | list all notes in notes_root              |
+| `MkdnListNotes`            | list all notes in notes_root             |
 
 > [!NOTE]<br> `MkdnNew note_name` creates a new note name.md in note_path, `MkdnNew subfolder/name` creates a new note
-> name.md in subfolder of notes_root. Default notes_root is `~/notes`. If name is not provided, it will prompt for a note
-> name or default to a hash string
-> A template name can be provided as the first argument, e.g. `MkdnNew template_name note_name`
+> name.md in subfolder of notes_root. Default notes_root is `~/notes`. If name is not provided, it will prompt for a
+> note name or default to a hash string A template name can be provided as the first argument, e.g.
+> `MkdnNew template_name note_name`
 
 ### Capture ideas and templates setup
 
@@ -214,3 +278,4 @@ There are good resources and setups for markdown note taking, here are some of t
 ## Table of Content and Link references
 
 ![image](https://github.com/ray-x/mkdn.nvim/assets/1681295/15d0ca22-da99-4e6f-a016-7f24a90354b8)
+````
