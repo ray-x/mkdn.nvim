@@ -73,14 +73,54 @@ local function parse_frontmatter(fileContent)
   return frontmatter
 end
 local log = function(...)
-  if require('mkdn').config().debug then
-    if lprint then
-      lprint(...)
-    else
-      print(vim.inspect(...))
-    end
-  end
+  print(vim.inspect(...))
 end
+
+if lprint then
+  log = lprint
+end
+
+-- Function to calculate relative path
+function get_relative_path(target_path, current_dir)
+  -- Get the full path of the current file
+  local current_file = vim.fn.expand('%:p')
+  -- Get the directory of the current file
+  current_dir = current_dir or vim.fn.fnamemodify(current_file, ':h') .. '/'
+  -- Normalize target path
+  local absolute_target_path = vim.fn.fnamemodify(target_path, ':p')
+
+  -- Function to split path into parts
+  local function split_path(path)
+    local parts = {}
+    for part in string.gmatch(path, '[^/]+') do
+      table.insert(parts, part)
+    end
+    return parts
+  end
+
+  local current_parts = split_path(current_dir)
+  local target_parts = split_path(absolute_target_path)
+  local relative_parts = {}
+
+  while #current_parts > 0 and #target_parts > 0 and current_parts[1] == target_parts[1] do
+    table.remove(current_parts, 1)
+    table.remove(target_parts, 1)
+  end
+
+  for _ in ipairs(current_parts) do
+    table.insert(relative_parts, '..')
+  end
+
+  for _, part in ipairs(target_parts) do
+    table.insert(relative_parts, part)
+  end
+
+  return table.concat(relative_parts, '/')
+end
+
+-- local assets_path = '/home/ray/Projects/notes/assets'
+-- local current_dir = '/home/ray/Projects/notes/abc'
+-- print(get_relative_path(assets_path, current_dir))
 
 local filecontent1 = [[
 ---
@@ -123,4 +163,5 @@ return {
   read_first_nlines = read_first_nlines,
   parse_frontmatter = parse_frontmatter,
   log = log,
+  get_relative_path = get_relative_path,
 }

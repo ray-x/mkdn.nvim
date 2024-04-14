@@ -15,21 +15,24 @@ local function download_asset(url)
   local notes_root = require('mkdn.config').config().notes_root
   local assets_path = require('mkdn.config').config().assets_path
   local bang = vim.fn.matchstr(url, image_pattern) ~= '' and '!' or ''
-  local file_path = notes_root .. '/' .. assets_path .. '/' .. filename
-  local assets_rel_path = './' .. assets_path .. '/' .. filename
-
+  local file_dir = notes_root .. assets_path
+  local file_path = file_dir .. '/' .. filename
   -- Ensure the assets directory exists
-  vim.fn.mkdir(assets_path, 'p')
+  vim.fn.mkdir(file_dir, 'p')
 
-  -- Download the image using curl
-  local command = string.format("curl -s -o '%s' '%s'", vim.fn.shellescape(file_path), url)
+  local rel_path = require('mkdn.utils').get_relative_path(file_path)
+
+  -- use -L to follow redirects
+  local command = string.format('curl --silent -L -o %s %s', file_path, vim.fn.shellescape(url))
+
   log(command)
   local result = os.execute(command)
+  local result = 0
 
   if result == true or result == 0 then -- os.execute returns true or 0 upon success depending on the Lua version
     vim.notify('Image downloaded successfully to: ' .. file_path)
     -- Insert the Markdown link to the image points to asset directory
-    local markdown_link = string.format('%s[image](%s)', bang, assets_rel_path)
+    local markdown_link = string.format('%s[image](%s)', bang, rel_path)
     vim.api.nvim_put({ markdown_link }, 'l', true, true)
     return true
   else
@@ -38,9 +41,11 @@ local function download_asset(url)
   end
 end
 
+-- download_asset('https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png')
+
 local function fetch_and_paste_url(url)
   -- Get content of the unnamed register
-  local url = url or vim.fn.getreg('*')
+  url = url or vim.fn.getreg('*')
 
   -- Check if the content is likely a URL
   if not url:match('^https?://') then
@@ -106,17 +111,31 @@ local function find_link_under_cursor()
   return nil
 end
 
-local function image_open(uri)
+local function image_open(rel_uri)
   local uv = vim.uv or vim.loop
   local os_name = uv.os_uname().sysname
   local is_win = os_name:find('Windows') or os_name:find('MINGW')
   local is_linux = os_name:find('Linux')
-  local cmd = 'open ' .. uri
+
+  -- check if the path exists
+  if vim.fn.filereadable(rel_uri) == 0 then
+    -- restore relative path
+    local current_file = vim.fn.expand('%:p')
+
+    rel_uri = vim.fn.fnamemodify(current_file, ':h') .. '/' .. rel_uri
+
+    if vim.fn.filereadable(rel_uri) == 0 then
+      vim.notify('File not found: ' .. rel_uri)
+      return
+    end
+  end
+
+  local cmd = 'open ' .. rel_uri
   if is_win then
-    cmd = 'start ' .. uri
+    cmd = 'start ' .. rel_uri
   end
   if is_linux then
-    cmd = 'xdg-open ' .. uri
+    cmd = 'xdg-open ' .. rel_uri
   end
 
   log(cmd)
@@ -166,4 +185,3 @@ return {
 -- download_asset('https://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/nvim-icon.png')
 -- fetch_and_paste_url('https://ashki23.github.io/markdown-latex.html')
 -- fetch_and_paste_url('https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png')
-

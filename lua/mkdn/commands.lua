@@ -71,3 +71,9 @@ vim.api.nvim_create_user_command('MkdnTocTelescope', function()
 end, {
   nargs = 0,
 })
+
+vim.api.nvim_create_user_command('MkdnCtags', function(input)
+  require('mkdn.ctags').picker(input.fargs)
+end, {
+  nargs = '*',
+})

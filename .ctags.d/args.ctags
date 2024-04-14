@@ -16,3 +16,7 @@
 --exclude=assets
 --exclude=css
 --exclude=scripts
+--exclude=.ctags.d
+--exclude=.trash
+--exclude=.zk
+--exclude=Excalidraw

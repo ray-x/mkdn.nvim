@@ -16,20 +16,18 @@ local function setup(cfg)
     if type(cfg.parse_link) == 'string' then
       key = cfg.parse_link
     end
-    vim.keymap.set(
-      { 'n', 'x' },
-      key,
-      require('mkdn.lnk').fetch_and_paste_url,
-      {
-        noremap = true,
-        desc = 'Fetch the title of the URL under the cursor and paste it as a Markdown link',
-      }
-    )
+    vim.keymap.set({ 'n', 'x' }, key, require('mkdn.lnk').fetch_and_paste_url, {
+      noremap = true,
+      desc = 'Fetch the title of the URL under the cursor and paste it as a Markdown link',
+    })
   end
 
   require('mkdn.commands')
   require('mkdn.notes')
-  require('mkdn.gtd')
+  if cfg.internal_features then
+    require('mkdn.gtd')
+    require('mkdn.ctags')
+  end
 end
 
 return {

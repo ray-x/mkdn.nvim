@@ -8,7 +8,7 @@ M.setup = function(cfg)
     local frontmatter = {
       '---',
       'title: {{title}}',
-      'auther: {{author}}',
+      'author: {{author}}',
       'date: ' .. os.date('%Y-%m-%d'),
       'id: ' .. os.time(),
       'tags: ' .. (args['tags'] or ''),
@@ -45,7 +45,7 @@ M.setup = function(cfg)
     author = os.getenv('USER'),
     templates = {
       _meta = { -- meta data for templates
-        -- some default value for templates e.g. {{auther}}
+        -- some default value for templates e.g. {{author}}
         author = os.getenv('USER'),
         date = os.date('%Y-%m-%d'),
       },
