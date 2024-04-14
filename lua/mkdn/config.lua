@@ -58,10 +58,19 @@ M.setup = function(cfg)
           function()
             return frontmatter({ tags = 'daily', category = 'daily' })
           end,
-          '# {{name}}',
+          '',
+          '---',
+          '',
+          '# {{date}}',
           '',
           '## Tasks',
+          '',
           '- [ ] Task 1',
+          '',
+          '---',
+          '',
+          '## Notes',
+          '',
         },
       },
       default = {

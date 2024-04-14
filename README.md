@@ -224,8 +224,8 @@ default template is defined in config.lua
 {
   templates = {
     _meta = { -- meta data for templates
-      -- some default value for templates e.g. {{auther}}
-      author = os.getenv('USER'),  -- replace {{auther}}
+      -- some default value for templates e.g. {{author}}
+      author = os.getenv('USER'),  -- replace {{author}}
       date = os.date('%Y-%m-%d'),  -- replace {{date}} in template
     },
     daily = {                       -- `daily` note template
