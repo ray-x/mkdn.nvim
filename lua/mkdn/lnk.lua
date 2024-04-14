@@ -1,13 +1,12 @@
-local log = require('mkdn.utils').log
+local log = lprint or require('mkdn.utils').log
 
 local function download_asset(url)
   -- Pattern to check if the URL points to an image
   local image_pattern = '\\v\\.(jpg|jpeg|png|gif|bmp|svg)$'
   local assets_pattern = require('mkdn.config').config().assets_pattern
-
+  log(vim.fn.empty(vim.fn.matchstr(url, assets_pattern)))
   -- Check if URL ends with an image extension
-  if vim.fn.matchstr(url, assets_pattern) ~= '' then
-    vim.notify('URL does not point to an image.')
+  if vim.fn.empty(vim.fn.matchstr(url, assets_pattern)) == 1 then
     return false
   end
 
@@ -39,12 +38,9 @@ local function download_asset(url)
   end
 end
 
--- download_asset('https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png')
--- download_asset('https://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/nvim-icon.png')
-
-local function fetch_and_paste_url()
+local function fetch_and_paste_url(url)
   -- Get content of the unnamed register
-  local url = vim.fn.getreg('*')
+  local url = url or vim.fn.getreg('*')
 
   -- Check if the content is likely a URL
   if not url:match('^https?://') then
@@ -164,3 +160,10 @@ return {
   fetch_and_paste_url = fetch_and_paste_url,
   follow_link = follow_link,
 }
+
+-- download_asset('https://ashki23.github.io/markdown-latex.html')
+-- download_asset('https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png')
+-- download_asset('https://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/nvim-icon.png')
+-- fetch_and_paste_url('https://ashki23.github.io/markdown-latex.html')
+-- fetch_and_paste_url('https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png')
+
