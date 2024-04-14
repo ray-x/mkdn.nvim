@@ -187,7 +187,6 @@ require('mkdn').setup{
 }
 ```
 
-````
 ## Use universal-ctags to generate tags
 
 universal-ctags is capable to parse markdown, frontmatter, fenced languages
@@ -278,4 +277,3 @@ There are good resources and setups for markdown note taking, here are some of t
 ## Table of Content and Link references
 
 ![image](https://github.com/ray-x/mkdn.nvim/assets/1681295/15d0ca22-da99-4e6f-a016-7f24a90354b8)
-````
