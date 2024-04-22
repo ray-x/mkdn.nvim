@@ -10,19 +10,19 @@ M.new_note_from_template = function(template)
   if not template then
     template = cfg.templates.default
   end
-  local path = template.path and template.path .. sep or sep
+  local path = template.path and (template.path .. sep) or ''
   local file_path = note_root .. path
   local note_name = type(template.name) == 'function' and template.name() or template.name
-  log('note name: ', note_name)
   local note_path = file_path .. note_name .. '.md'
+  log('note name: ', note_name, 'note path: ', note_path)
   -- check if file exists
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
     return vim.cmd('silent! e ' .. note_path)
   end
-  local note = io.open(note_path, 'w')
+  local note, err = io.open(note_path, 'a+')
   if not note then
-    vim.notify('Error: Cannot create note at ' .. note_path)
+    vim.notify('Error: Cannot create note at ' .. note_path .. " err: ".. err)
     return
   end
 

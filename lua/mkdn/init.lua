@@ -5,21 +5,25 @@ local function setup(cfg)
     local key = 'gx'
     if type(cfg.follow_link) == 'string' then
       key = cfg.follow_link
+      vim.keymap.set({ 'n', 'x' }, key, function()
+        require('mkdn.lnk').follow_link()
+      end, { noremap = true, desc = 'Follow the link under the cursor' })
+    elseif type(cfg.follow_link) == 'function' then
+      cfg.follow_link()
     end
-    vim.keymap.set({ 'n', 'x' }, key, function()
-      require('mkdn.lnk').follow_link()
-    end, { noremap = true, desc = 'Follow the link under the cursor' })
   end
 
   if cfg.paste_link then
     local key = '<leader>u'
     if type(cfg.parse_link) == 'string' then
       key = cfg.parse_link
+      vim.keymap.set({ 'n', 'x' }, key, require('mkdn.lnk').fetch_and_paste_url, {
+        noremap = true,
+        desc = 'Fetch the title of the URL under the cursor and paste it as a Markdown link',
+      })
+    elseif type(cfg.paste_link) == 'function' then
+      cfg.paste_link()
     end
-    vim.keymap.set({ 'n', 'x' }, key, require('mkdn.lnk').fetch_and_paste_url, {
-      noremap = true,
-      desc = 'Fetch the title of the URL under the cursor and paste it as a Markdown link',
-    })
   end
 
   require('mkdn.commands')
