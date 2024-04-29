@@ -72,13 +72,6 @@ local function parse_frontmatter(fileContent)
   -- print(vim.inspect(frontmatter))
   return frontmatter
 end
-local log = function(...)
-  print(vim.inspect(...))
-end
-
-if lprint then
-  log = lprint
-end
 
 -- Function to calculate relative path
 function get_relative_path(target_path, current_dir)
@@ -162,6 +155,6 @@ This is the content
 return {
   read_first_nlines = read_first_nlines,
   parse_frontmatter = parse_frontmatter,
-  log = log,
+  log = lprint or function(...) print(vim.inspect(...)) end,
   get_relative_path = get_relative_path,
 }
