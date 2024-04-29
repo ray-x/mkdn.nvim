@@ -4,35 +4,7 @@ M.config = function()
 end
 
 M.setup = function(cfg)
-  local function frontmatter(args)
-    local frontmatter = {
-      '---',
-      'title: {{title}}',
-      'author: {{author}}',
-      'date: ' .. os.date('%Y-%m-%d'),
-      'id: ' .. os.time(),
-      'tags: ' .. (args['tags'] or ''),
-      'category: ' .. (args['category'] or ''),
-      'type: post',
-    }
-
-    local used = { 'title', 'author', 'date', 'id', 'tags', 'category', 'type' }
-    -- we can have other optional frontmatter values
-    for k, v in pairs(args) do
-      if not vim.tbl_contains(used, k) then
-        if type(v) == 'table' then
-          v = '[' .. table.concat(v, ',') .. ']'
-        elseif type(v) == 'function' then
-          v = v()
-        end
-        table.insert(frontmatter, k .. ': ' .. v)
-      end
-    end
-
-    table.insert(frontmatter, '---')
-    return frontmatter
-  end
-
+  local frontmatter = require('mkdn.templates').frontmatter
   M._config = {
     follow_link = 'gx',
     paste_link = '<leader>u',
@@ -48,50 +20,16 @@ M.setup = function(cfg)
         -- some default value for templates e.g. {{author}}
         author = os.getenv('USER'),
         date = os.date('%Y-%m-%d'),
-      },
-      daily = {
-        name = function()
-          return os.date('%Y-%m-%d')
-        end, -- or a function that returns the name
-        path = 'journal',
-        content = {
-          function()
-            return frontmatter({ tags = 'daily', category = 'daily' })
-          end,
-          '',
-          '---',
-          '',
-          '# {{date}}',
-          '',
-          '## Tasks',
-          '',
-          '- [ ] Task 1',
-          '',
-          '---',
-          '',
-          '## Notes',
-          '',
-        },
-      },
-      default = {
-        path = '',
-        name = function()
-          -- default name with random number in hex
-          vim.ui.input({
-            prompt = 'Note name: ',
-            default = 'default_' .. string.format('%x', math.random(16, 1000000)):sub(1, 4),
-          }, function(result)
-            return result
-          end)
-        end, -- or a function that returns the name
-        content = {
-          function()
-            return frontmatter({ category = 'note' })
-          end,
-          '# {{name}}',
-        },
+        -- plugin install dir templates; workspaace templates
+        paths = {
+        -- plugin install dir of lazy
+        vim.fn.stdpath('data') .. '/lazy/mkdn.nvim/templates/',
+        -- workspace ./tempaltes
+        vim.fn.getcwd() .. '/templates/'},
       },
     },
+    daily = require('mkdn.templates').daily,
+    default = require('mkdn.templates').default,
   }
   M._config = vim.tbl_deep_extend('force', M._config, cfg or {})
   if M._config.notes_root[#M._config.notes_root] ~= '/' then

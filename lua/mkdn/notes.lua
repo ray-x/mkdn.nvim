@@ -3,6 +3,56 @@ local log = require('mkdn.utils').log
 local M = {}
 local sep = '/'
 
+M.insert_template=function(opts)
+  -- insert text in background
+  local note_name = opts.note_name or vim.fn.expand('%:t:r')
+  local abs_file_path = vim.fn.expand('%:p')
+  local template = opts.template
+  local note = opts.note or io.open(abs_file_path, 'a+')
+  if not note then
+    vim.notify('Error: Cannot open note at ' .. abs_file_path)
+    return
+  end
+  local meta = require('mkdn.config').config().templates._meta
+  meta.title = note_name
+  meta.name = note_name
+
+  for _, line in ipairs(template.content) do
+    local function write_line(l)
+      log(l)
+      -- io.write or nvim_buf_set_lines
+      if type(l) == 'string' then
+        -- expands {{key}} to value from meta
+        local key = string.match(l, '{{(.-)}}')
+        if key then
+          l = string.gsub(l, '{{' .. key .. '}}', meta[key])
+        end
+        return note:write(l .. '\n')
+      end
+      -- I not plan to support tables inside table
+      if type(l) == 'function' then
+        local lines = l()
+        log('func returns ', lines)
+        if not lines then
+          vim.notify('Error: invalid function inside template')
+        end
+        if type(lines) == 'string' then
+          write_line(lines)
+        elseif type(lines) == 'table' then
+          for _, l2 in ipairs(lines) do
+            write_line(l2)
+          end
+        end
+      end
+    end
+    write_line(line)
+  end
+  if not opts.note then
+    note:close()
+  end
+  vim.cmd('silent! e ')
+end
+
 M.new_note_from_template = function(template)
   log(template)
   local cfg = require('mkdn.config').config()
@@ -25,40 +75,7 @@ M.new_note_from_template = function(template)
     vim.notify('Error: Cannot create note at ' .. note_path .. " err: ".. err)
     return
   end
-
-  local meta = require('mkdn.config').config().templates._meta
-  meta.title = note_name
-  meta.name = note_name
-
-  for _, line in ipairs(template.content) do
-    local function write_line(l)
-      log(l)
-      if type(l) == 'string' then
-        -- expands {{key}} to value from meta
-        local key = string.match(l, '{{(.-)}}')
-        if key then
-          l = string.gsub(l, '{{' .. key .. '}}', meta[key])
-        end
-        return note:write(l .. '\n')
-      end
-      -- I not plan to support tables inside talbe
-      if type(l) == 'function' then
-        local lines = l()
-        log('func returns ', lines)
-        if not lines then
-          vim.notify('Error: invalid function inside template')
-        end
-        if type(lines) == 'string' then
-          write_line(lines)
-        elseif type(lines) == 'table' then
-          for _, l2 in ipairs(lines) do
-            write_line(l2)
-          end
-        end
-      end
-    end
-    write_line(line)
-  end
+  M.insert_template({note = note, note_name = note_name, template = template})
   note:close()
   vim.cmd('silent! e ' .. note_path)
 end
@@ -133,13 +150,11 @@ vim.api.nvim_create_user_command('MkdnNewDaily', new_daily, {
   bar = false,
   range = false,
 })
--- capture note: create a new note with predefined template
-local function capture_note()
-  -- write default content include front matter
-  -- read templates from config
+
+local select_template = function(on_choice)
   local templates = require('mkdn.config').config().templates
-  -- let user select template use ui.select
   local templates_list = {}
+
   local reserved = { '_meta' }
   for k, v in pairs(templates) do
     if not vim.tbl_contains(reserved, k) then
@@ -153,8 +168,25 @@ local function capture_note()
       return 'use ' .. item .. ' to create note'
     end,
   }, function(choice)
+    on_choice(choice)
+  end)
+end
+
+-- capture note: create a new note with predefined template
+local function capture_note()
+  select_template(function(choice)
+  local templates = require('mkdn.config').config().templates
     local template = templates[choice]
     M.new_note_from_template(template)
+  end)
+end
+
+
+local function insert_template()
+  select_template( function(choice)
+    local templates = require('mkdn.config').config().templates
+    local template = templates[choice]
+    M.insert_template({template = template})
   end)
 end
 
@@ -174,11 +206,20 @@ vim.api.nvim_create_user_command('MkdnListNotes', list_notes, {
   range = false,
 })
 
+vim.api.nvim_create_user_command('MkdnInsertTemplate', insert_template, {
+  nargs = 0,
+  bang = false,
+  bar = false,
+  range = false,
+})
+
 vim.api.nvim_create_user_command('MkdnCapture', capture_note, {
   nargs = 0,
   bang = false,
   bar = false,
   range = false,
 })
+
+
 
 return M

@@ -167,6 +167,18 @@ local function follow_link()
   end)
 end
 
+-- paste a image from clipboard
+--   -- MacOS (osascript) as a fallback  https://gist.github.com/miguelmota/b0e05d8c60cd92c646ddd3edcb66ea05
+-- mac only
+local paste_cmd = [[osascript \
+    -e 'on run args' \
+    -e 'set png_data to the clipboard as «class PNGf»' \
+    -e 'set the_file to open for access POSIX path of (POSIX file (first item of args)) with write permission' \
+    -e 'write png_data to the_file' \
+    -e 'close access the_file'\
+    -e end \
+    "$@"]]
+
 -- follow_link()
 -- [google](https://google.com)
 -- [readme](README.md)
