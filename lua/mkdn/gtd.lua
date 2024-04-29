@@ -73,7 +73,7 @@ local function parse_time_entry_to_minutes(entry)
 end
 local function calculate_total_time(bufnr, start_row, end_row)
   local total_minutes = 0
-  for i = start_row + 2, end_row - 1 do -- Skipping the "time:" line and the last line
+  for i = start_row + 2, end_row  do -- Skipping the "time:" line and the last line
     local line = vim.api.nvim_buf_get_lines(bufnr, i, i + 1, false)[1]
     local times = vim.split(line:gsub("[%[%]']", ''), ',')
     if #times == 2 then -- If it's a start and end time
@@ -169,6 +169,7 @@ local function start_task()
   else
     -- YAML doesn't exist, insert it at the correct position
     local metadata = {
+      '',
       '```yml',
       'due: ',
       'time:',

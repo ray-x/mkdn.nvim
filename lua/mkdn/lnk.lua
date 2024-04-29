@@ -1,4 +1,4 @@
-local log = lprint or require('mkdn.utils').log
+local log = require('mkdn.utils').log
 
 local function download_asset(url)
   -- Pattern to check if the URL points to an image

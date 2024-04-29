@@ -1,4 +1,4 @@
-local M = {}
+local sep = '/'
 
 local function frontmatter(args)
   local frontmatter = {
@@ -45,7 +45,8 @@ type: post,
 # {{title}}
 
 {{content}}
-]]--
+]]
+--
 
 local prepare_kv = function(args)
   args = args or {}
@@ -82,7 +83,7 @@ local function gen_lines_from_tmpl(tmpl_name, args)
     end
   end
   if not vim.fn.filereadable(tmpl_name) then
-    return {''}
+    return { '' }
   end
   local content = load_template(tmpl_name)
   local lines = {}
@@ -107,6 +108,16 @@ return {
     args = prepare_kv(args)
     local lines = gen_lines_from_tmpl(tmpl_name, args)
     insert_lines(lines)
+  end,
+  tmpl_path = function(tmpl_name)
+    local cfg = require('mkdn.config').config()
+    local note_root = cfg.notes_root
+    local template = cfg.templates[tmpl_name] or cfg.templates.default
+    local path = template.path and (template.path .. sep) or ''
+    local file_path = note_root .. path
+    local note_name = type(template.name) == 'function' and template.name() or template.name
+    local note_path = file_path .. note_name .. '.md'
+    return note_path
   end,
   daily = {
     name = function()

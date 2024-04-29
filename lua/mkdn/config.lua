@@ -1,6 +1,6 @@
 local M = {}
 M.config = function()
-  return M._config
+  return vim.tbl_deep_extend('keep', {}, M._config)
 end
 
 M.setup = function(cfg)
@@ -20,24 +20,26 @@ M.setup = function(cfg)
         -- some default value for templates e.g. {{author}}
         author = os.getenv('USER'),
         date = os.date('%Y-%m-%d'),
-        -- plugin install dir templates; workspaace templates
         paths = {
-        -- plugin install dir of lazy
-        vim.fn.stdpath('data') .. '/lazy/mkdn.nvim/templates/',
-        -- workspace ./tempaltes
-        vim.fn.getcwd() .. '/templates/'},
+          -- plugin install dir of lazy
+          vim.fn.stdpath('data') .. '/lazy/mkdn.nvim/templates/',
+          -- workspace ./tempaltes
+          vim.fn.getcwd() .. '/templates/',
+        },
       },
+      daily = require('mkdn.templates').daily,
+      default = require('mkdn.templates').default,
     },
-    daily = require('mkdn.templates').daily,
-    default = require('mkdn.templates').default,
   }
+
   M._config = vim.tbl_deep_extend('force', M._config, cfg or {})
+
   if M._config.notes_root[#M._config.notes_root] ~= '/' then
     M._config.notes_root = M._config.notes_root .. '/'
   end
-  for _, template in pairs(M._config.templates) do
+  for k, template in pairs(M._config.templates) do
     if template.path and template.path[#template.path] ~= '/' then
-      template.path = template.path .. '/'
+      M._config.templates[k].path = template.path .. '/'
     end
   end
   return M._config

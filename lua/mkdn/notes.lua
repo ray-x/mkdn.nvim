@@ -54,18 +54,7 @@ M.insert_template=function(opts)
 end
 
 M.new_note_from_template = function(template)
-  log(template)
-  local cfg = require('mkdn.config').config()
-  local note_root = cfg.notes_root
-  if not template then
-    template = cfg.templates.default
-  end
-  local path = template.path and (template.path .. sep) or ''
-  local file_path = note_root .. path
-  local note_name = type(template.name) == 'function' and template.name() or template.name
-  local note_path = file_path .. note_name .. '.md'
-  log('note name: ', note_name, 'note path: ', note_path)
-  -- check if file exists
+  local note_path = require('mkdn.templates').tmpl_path(template and template.name or 'default')
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
     return vim.cmd('silent! e ' .. note_path)
@@ -139,6 +128,20 @@ end
 
 vim.api.nvim_create_user_command('MkdnNew', new_note, {
   nargs = '*',
+  bang = false,
+  bar = false,
+  range = false,
+})
+
+vim.api.nvim_create_user_command('MkdnDaily', function(args)
+  local note_path = require('mkdn.templates').tmpl_path('daily')
+  if vim.fn.filereadable(note_path) == 1 then
+    vim.notify('Note already exists')
+    return vim.cmd('silent! e ' .. note_path)
+  end
+  new_daily(args)
+end, {
+  -- nargs = '*',
   bang = false,
   bar = false,
   range = false,
