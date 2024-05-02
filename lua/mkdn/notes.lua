@@ -54,7 +54,8 @@ M.insert_template=function(opts)
 end
 
 M.new_note_from_template = function(template)
-  local note_path = require('mkdn.templates').tmpl_path(template and template.name or 'default')
+  local note_name = template.name and (type(template.name) == 'function' and template.name() or template.name or 'default')
+  local note_path = require('mkdn.templates').tmpl_path(template)
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
     return vim.cmd('silent! e ' .. note_path)
@@ -121,8 +122,7 @@ end
 local function new_daily(opts)
   opts = opts.fargs or {}
   local cfg = require('mkdn.config').config().templates.daily
-  local daily = vim.tbl_deep_extend('force', {}, cfg)
-
+  local daily = vim.tbl_deep_extend('force', {}, cfg, opts)
   M.new_note_from_template(daily)
 end
 
@@ -134,7 +134,8 @@ vim.api.nvim_create_user_command('MkdnNew', new_note, {
 })
 
 vim.api.nvim_create_user_command('MkdnDaily', function(args)
-  local note_path = require('mkdn.templates').tmpl_path('daily')
+  local daily = require('mkdn.config').config().templates.daily
+  local note_path = require('mkdn.templates').tmpl_path(daily)
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
     return vim.cmd('silent! e ' .. note_path)

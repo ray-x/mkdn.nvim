@@ -109,10 +109,9 @@ return {
     local lines = gen_lines_from_tmpl(tmpl_name, args)
     insert_lines(lines)
   end,
-  tmpl_path = function(tmpl_name)
+  tmpl_path = function(template)
     local cfg = require('mkdn.config').config()
     local note_root = cfg.notes_root
-    local template = cfg.templates[tmpl_name] or cfg.templates.default
     local path = template.path and (template.path .. sep) or ''
     local file_path = note_root .. path
     local note_name = type(template.name) == 'function' and template.name() or template.name
