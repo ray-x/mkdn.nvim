@@ -12,3 +12,5 @@
   "-" @punctuation.special (#set! conceal "─"))
 
 (("-" @punctuation.special) (#set! conceal "─"))
+
+(("-" @keyword) (#set! conceal "") )

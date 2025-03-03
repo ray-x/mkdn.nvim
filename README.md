@@ -1,7 +1,7 @@
 # mkdn.nvim
 
 mkdn.nvim is markdown toolkit for neovim. It utilize LSP, telescope/ripgrep and universal-ctags to provide a better
-markdown editing experience.
+markdown editing experience for note taking and task management.
 
 ## Features
 
