@@ -1,4 +1,7 @@
-local log = require('mkdn.utils').log
+local utils = require('mkdn.utils')
+local log = utils.log
+local sep = utils.sep()
+
 
 local function download_asset(url)
   -- Pattern to check if the URL points to an image
@@ -16,7 +19,7 @@ local function download_asset(url)
   local assets_path = require('mkdn.config').config().assets_path
   local bang = vim.fn.matchstr(url, image_pattern) ~= '' and '!' or ''
   local file_dir = notes_root .. assets_path
-  local file_path = file_dir .. '/' .. filename
+  local file_path = file_dir .. sep .. filename
   -- Ensure the assets directory exists
   vim.fn.mkdir(file_dir, 'p')
 

@@ -13,7 +13,7 @@ M.insert_template=function(opts)
     vim.notify('Error: Cannot open note at ' .. abs_file_path)
     return
   end
-  local meta = require('mkdn.config').config().templates._meta
+  local meta = vim.tbl_deep_extend('force', {}, require('mkdn.config').config().templates._meta)
   meta.title = note_name
   meta.name = note_name
 
@@ -54,20 +54,35 @@ M.insert_template=function(opts)
 end
 
 M.new_note_from_template = function(template)
-  local note_name = template.name and (type(template.name) == 'function' and template.name() or template.name or 'default')
   local note_path = require('mkdn.templates').tmpl_path(template)
-  if vim.fn.filereadable(note_path) == 1 then
-    vim.notify('Note already exists')
-    return vim.cmd('silent! e ' .. note_path)
+  local new_note = function(note_name)
+    -- local note_name = template.name and (type(template.name) == 'function' and template.name() or template.name or 'default')
+    if vim.fn.filereadable(note_name) == 1 then
+      vim.notify('Note already exists')
+      return vim.cmd('silent! e ' .. note_name)
+    end
+    local note, err = io.open(note_name, 'a+')
+    if not note then
+      vim.notify('Error: Cannot create note at ' .. note_name .. " err: ".. err)
+      return
+    end
+    M.insert_template({note = note, note_name = note_name, template = template})
+    note:close()
+    vim.cmd('silent! e ' .. note_name)
   end
-  local note, err = io.open(note_path, 'a+')
-  if not note then
-    vim.notify('Error: Cannot create note at ' .. note_path .. " err: ".. err)
-    return
+  if not note_path then
+    vim.ui.input({
+      prompt = 'Enter note name',
+      default = template.name or 'default',
+    }, function(note_name)
+      local root = require('mkdn.config').config().notes_root
+      local p = template.path
+      note_name = root .. sep .. p .. sep .. note_name .. '.md'
+      new_note(note_name)
+    end)
+  else
+    new_note(note_path)
   end
-  M.insert_template({note = note, note_name = note_name, template = template})
-  note:close()
-  vim.cmd('silent! e ' .. note_path)
 end
 
 -- use default templates to create note
@@ -102,6 +117,7 @@ local function new_note(opts)
     template = cfg.templates[opts[1]]
     table.remove(opts, 1)
   end
+  template = vim.tbl_deep_extend('force', {}, template, opts) -- clone before use
 
   -- template is default
   if opts[1] and type(opts[1]) == 'string' then
@@ -120,8 +136,17 @@ local function new_note(opts)
 end
 
 local function new_daily(opts)
+  local bang = opts.bang == 1
   opts = opts.fargs or {}
-  local cfg = require('mkdn.config').config().templates.daily
+  local append
+  local cfg = vim.tbl_deep_extend('keep', {}, require('mkdn.config').config().templates.daily)
+  if bang then
+    append = vim.fn.getreg('*')
+    local content = vim.tbl_deep_extend('force', {}, cfg.content)
+    table.insert(content, append)
+    cfg.content = content
+  end
+
   local daily = vim.tbl_deep_extend('force', {}, cfg, opts)
   M.new_note_from_template(daily)
 end
@@ -134,7 +159,8 @@ vim.api.nvim_create_user_command('MkdnNew', new_note, {
 })
 
 vim.api.nvim_create_user_command('MkdnDaily', function(args)
-  local daily = require('mkdn.config').config().templates.daily
+
+  local daily = vim.tbl_deep_extend('keep', {}, require('mkdn.config').config().templates.daily)
   local note_path = require('mkdn.templates').tmpl_path(daily)
   if vim.fn.filereadable(note_path) == 1 then
     vim.notify('Note already exists')
@@ -177,10 +203,44 @@ local select_template = function(on_choice)
 end
 
 -- capture note: create a new note with predefined template
-local function capture_note()
+-- arguments:
+-- 1. opts: table from cmd line and wrapped by create_user_command
+local function capture_note(opts)
+  local bang = opts.bang == 1
+  local range = opts.range or 0
+  if bang then
+    -- new daily with clipboard content
+    return new_daily(opts)
+  end
+  local append
+  if range == 2 then
+    append = vim.fn.getline(line1, line2)
+  end
   select_template(function(choice)
-  local templates = require('mkdn.config').config().templates
+    local templates = require('mkdn.config').config().templates
     local template = templates[choice]
+    template = vim.tbl_deep_extend('force', {}, template) -- clone template
+    -- local template = vim.tbl_deep_extend('force', template, templates[choice])
+    local clipboard = opts.register or false
+    local notes = function()
+      if clipboard then
+        -- read from register *
+        local content = vim.fn.getreg('*')
+        if content then
+          return content
+        end
+      end
+      -- for visal mode
+      if range or vim.api.nvim_get_mode().mode:lower() == 'v' then
+        local content = vim.fn.getline("'<", "'>")
+        if content then
+          return content
+        end
+      end
+      return ''
+    end
+    -- append capture content to end of note content
+    table.insert(template.content, notes)
     M.new_note_from_template(template)
   end)
 end
@@ -218,10 +278,10 @@ vim.api.nvim_create_user_command('MkdnInsertTemplate', insert_template, {
 })
 
 vim.api.nvim_create_user_command('MkdnCapture', capture_note, {
-  nargs = 0,
-  bang = false,
+  nargs = '*',
+  bang = true,
   bar = false,
-  range = false,
+  range = true,
 })
 
 

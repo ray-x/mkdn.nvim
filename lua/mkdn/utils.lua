@@ -111,6 +111,10 @@ function get_relative_path(target_path, current_dir)
   return table.concat(relative_parts, '/')
 end
 
+
+-- get path separator for different OS
+local sep = function() return package.config:sub(1, 1) end
+
 -- local assets_path = '/home/ray/Projects/notes/assets'
 -- local current_dir = '/home/ray/Projects/notes/abc'
 -- print(get_relative_path(assets_path, current_dir))
@@ -157,4 +161,6 @@ return {
   parse_frontmatter = parse_frontmatter,
   log = lprint or function(...) print(vim.inspect(...)) end,
   get_relative_path = get_relative_path,
+  sep = sep,
 }
+

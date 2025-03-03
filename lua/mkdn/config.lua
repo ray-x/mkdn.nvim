@@ -1,4 +1,6 @@
 local M = {}
+local utils = require('mkdn.utils')
+local sep = utils.sep()
 M.config = function()
   return vim.tbl_deep_extend('keep', {}, M._config)
 end
@@ -9,7 +11,7 @@ M.setup = function(cfg)
     follow_link = 'gx',
     paste_link = '<leader>u',
     telescope = {},
-    notes_root = os.getenv('HOME') .. '/notes',
+    notes_root = os.getenv('HOME') .. sep .. 'notes',
     note_path = '',
     daily_path = '',
     assets_path = 'assets',
@@ -34,14 +36,17 @@ M.setup = function(cfg)
 
   M._config = vim.tbl_deep_extend('force', M._config, cfg or {})
 
-  if M._config.notes_root[#M._config.notes_root] ~= '/' then
-    M._config.notes_root = M._config.notes_root .. '/'
+  local sep = utils.sep()
+  -- remove trailing slash
+  if M._config.notes_root[#M._config.notes_root] == sep then
+      M._config.notes_root = M._config.notes_root:sub(1, -2)
   end
-  for k, template in pairs(M._config.templates) do
-    if template.path and template.path[#template.path] ~= '/' then
-      M._config.templates[k].path = template.path .. '/'
-    end
-  end
+  -- prefix with slash
+  -- for k, template in pairs(M._config.templates) do
+  --   if template.path and template.path[1] ~= sep then
+  --     M._config.templates[k].path = sep .. template.path
+  --   end
+  -- end
   return M._config
 end
 

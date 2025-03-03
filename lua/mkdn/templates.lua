@@ -112,10 +112,17 @@ return {
   tmpl_path = function(template)
     local cfg = require('mkdn.config').config()
     local note_root = cfg.notes_root
-    local path = template.path and (template.path .. sep) or ''
-    local file_path = note_root .. path
-    local note_name = type(template.name) == 'function' and template.name() or template.name
-    local note_path = file_path .. note_name .. '.md'
+    local path = template.path or ''
+    local file_path = note_root .. sep .. path
+
+    local note_name = template.name
+    if type(template.name) == 'function' then
+      note_name = template.name()
+      if not note_name then
+        return
+      end
+    end
+    local note_path = file_path .. sep .. note_name .. '.md'
     return note_path
   end,
   daily = {
@@ -144,15 +151,10 @@ return {
   },
   default = {
     path = '',
-    name = function()
-      -- default name with random number in hex
-      vim.ui.input({
-        prompt = 'Note name: ',
-        default = 'default_' .. string.format('%x', math.random(16, 1000000)):sub(1, 4),
-      }, function(result)
-        return result
-      end)
-    end, -- or a function that returns the name
+    -- name = function()
+    --   -- default name with random number in hex
+    --     return 'default_' .. string.format('%x', math.random(16, 1000000)):sub(1, 4)
+    -- end, -- or a function that returns the name
     content = {
       function()
         return frontmatter({ category = 'note' })
